@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# arc-harness installer
+# scf installer
 # Usage: ./install.sh [--target /path/to/paper-project] [--journal neurips]
 set -euo pipefail
 
@@ -14,7 +14,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 ARC_SRC="$(cd "$(dirname "$0")/src" && pwd)"
-echo "Installing arc-harness → $TARGET (journal: $JOURNAL)"
+echo "Installing scf → $TARGET (journal: $JOURNAL)"
 
 # CLAUDE.md
 if [ ! -f "$TARGET/CLAUDE.md" ]; then
@@ -52,7 +52,7 @@ echo "  ✓ .arc/ runtime directory"
 # .gitignore
 GITIGNORE="$TARGET/.gitignore"
 if [ -f "$GITIGNORE" ] && ! grep -q "^\.arc/state" "$GITIGNORE" 2>/dev/null; then
-    printf '\n# arc-harness runtime\n.arc/state/\n.arc/figures/rendered/\n.arc/memory/\n' >> "$GITIGNORE"
+    printf '\n# scf runtime\n.arc/state/\n.arc/figures/rendered/\n.arc/memory/\n' >> "$GITIGNORE"
     echo "  ✓ .gitignore updated"
 fi
 

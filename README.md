@@ -1,4 +1,4 @@
-# Arc Paper Framework
+# scf Paper Framework
 
 自动化生成高质量、可验证、可重复的学术论文框架。
 

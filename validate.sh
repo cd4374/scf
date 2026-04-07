@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Verify arc-harness installation completeness
+# Verify scf installation completeness
 set -euo pipefail
 
 TARGET="${TARGET:-$(pwd)}"
@@ -25,7 +25,7 @@ check_exec() {
     fi
 }
 
-echo "Validating arc-harness installation in $TARGET..."
+echo "Validating scf installation in $TARGET..."
 echo ""
 echo "Core files:"
 check "CLAUDE.md"

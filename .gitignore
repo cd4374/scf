@@ -11,7 +11,7 @@ tests/output/
 # macOS
 .DS_Store
 
-# arc-harness runtime (installed to paper projects)
+# scf runtime (installed to paper projects)
 .arc/state/
 .arc/figures/rendered/
 .arc/memory/

@@ -2,7 +2,7 @@
 
 ## Project
 - Journal target: __JOURNAL__
-- Framework: arc-harness v2.0
+- Framework: scf v2.0
 
 ## Absolute quality gates — never negotiate
 - Minimum 6000 words in body text (excluding references)

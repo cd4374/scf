@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# arc-harness uninstaller
+# scf uninstaller
 # Usage: ./uninstall.sh [--target /path/to/paper-project]
 set -euo pipefail
 
@@ -11,7 +11,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-echo "Uninstalling arc-harness from $TARGET..."
+echo "Uninstalling scf from $TARGET..."
 
 # Remove .claude/ structure
 if [ -d "$TARGET/.claude" ]; then
@@ -32,7 +32,7 @@ fi
 # Remove CLAUDE.md (installed by arc-harness)
 if [ -f "$TARGET/CLAUDE.md" ]; then
     # Check if it's an arc-harness installed one (contains arc-harness marker)
-    if grep -q "arc-harness" "$TARGET/CLAUDE.md" 2>/dev/null; then
+    if grep -q "scf" "$TARGET/CLAUDE.md" 2>/dev/null; then
         rm -f "$TARGET/CLAUDE.md"
         echo "  ✓ Removed CLAUDE.md"
     else

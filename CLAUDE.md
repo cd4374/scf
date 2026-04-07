@@ -1,4 +1,4 @@
-# ARC-Harness: Project Alignment Document
+# scf: Project Alignment Document
 
 ## Project Objective (Core Alignment Point)
 
