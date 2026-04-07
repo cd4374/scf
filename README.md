@@ -7,7 +7,7 @@
 ```bash
 # 1. 安装到你的论文项目目录
 cd /path/to/your-paper-project
-/path/to/arc-harness/install.sh --journal neurips
+/path/to/scf/install.sh --journal neurips
 
 # 2. 在 Claude Code 中运行
 /paper:run --idea "你的研究问题" --journal neurips
@@ -54,7 +54,7 @@ idea-validation → literature-review → synthesis → experiment-design
 ## 卸载
 
 ```bash
-/path/to/arc-harness/uninstall.sh
+/path/to/scf/uninstall.sh
 ```
 
 ## 验证

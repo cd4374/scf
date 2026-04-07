@@ -29,21 +29,21 @@ if [ -d "$TARGET/.arc" ]; then
     echo "  ✓ Removed .arc/"
 fi
 
-# Remove CLAUDE.md (installed by arc-harness)
+# Remove CLAUDE.md (installed by scf)
 if [ -f "$TARGET/CLAUDE.md" ]; then
-    # Check if it's an arc-harness installed one (contains arc-harness marker)
+    # Check if it's an scf installed one (contains scf marker)
     if grep -q "scf" "$TARGET/CLAUDE.md" 2>/dev/null; then
         rm -f "$TARGET/CLAUDE.md"
         echo "  ✓ Removed CLAUDE.md"
     else
-        echo "  ⚠ CLAUDE.md exists but not from arc-harness — skipped"
+        echo "  ⚠ CLAUDE.md exists but not from scf — skipped"
     fi
 fi
 
-# Restore .gitignore (remove arc-harness entries)
+# Restore .gitignore (remove scf entries)
 if [ -f "$TARGET/.gitignore" ]; then
-    # Remove arc-harness runtime entries
-    sed -i '' '/^# arc-harness runtime$/,/^$/d' "$TARGET/.gitignore" 2>/dev/null || true
+    # Remove scf runtime entries
+    sed -i '' '/^# scf runtime$/,/^$/d' "$TARGET/.gitignore" 2>/dev/null || true
     sed -i '' '/^\.arc\/state\/$/d' "$TARGET/.gitignore" 2>/dev/null || true
     sed -i '' '/^\.arc\/figures\/rendered\/$/d' "$TARGET/.gitignore" 2>/dev/null || true
     sed -i '' '/^\.arc\/memory\/$/d' "$TARGET/.gitignore" 2>/dev/null || true
