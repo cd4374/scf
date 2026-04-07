@@ -1,3 +1,9 @@
+---
+name: paper-reset
+description: Reset a specific stage or all state
+usage: /paper:reset [stage-name|all]
+---
+
 Reset a specific stage or all state.
 
 Usage: /paper:reset [stage-name|all]

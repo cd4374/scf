@@ -1,3 +1,9 @@
+---
+name: paper-review
+description: Trigger a specific reviewer subagent
+usage: /paper:review [idea|literature|logic|stat|figures|final]
+---
+
 Trigger a specific reviewer subagent.
 
 Usage: /paper:review [idea|literature|logic|stat|figures|final]

@@ -1,3 +1,9 @@
+---
+name: paper-run
+description: Run the academic paper pipeline from the current stage
+usage: /paper:run [--idea "research question"] [--journal neurips|icml|iclr|acl|ieee|elsevier|springer] [--resume]
+---
+
 Run the academic paper pipeline from the current stage.
 
 Usage: /paper:run [--idea "research question"] [--journal neurips|icml|iclr|acl|ieee|elsevier|springer] [--resume]

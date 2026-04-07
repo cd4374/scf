@@ -1,3 +1,9 @@
+---
+name: paper-status
+description: Display current pipeline status and any blocking issues
+usage: /paper:status
+---
+
 Display current pipeline status and any blocking issues.
 
 Read `.arc/state/pipeline-status.json` and all `review-*.json` files.

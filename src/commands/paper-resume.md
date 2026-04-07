@@ -1,3 +1,9 @@
+---
+name: paper-resume
+description: Resume the pipeline from where it was interrupted
+usage: /paper:resume
+---
+
 Resume the pipeline from where it was interrupted.
 
 1. Read `.arc/state/pipeline-status.json`

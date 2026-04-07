@@ -1,3 +1,9 @@
+---
+name: paper-export
+description: Package the final paper for submission
+usage: /paper:export
+---
+
 Package the final paper for submission.
 
 Prerequisites: review-final.json must have pass: true
