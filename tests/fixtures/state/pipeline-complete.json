@@ -1,0 +1,101 @@
+{
+  "run_id": "rc-test-success",
+  "mode": "idea_start",
+  "backend": {
+    "executor": {
+      "type": "fixture",
+      "default": {
+        "status": "done"
+      },
+      "results": {
+        "22": {
+          "status": "done",
+          "writes": [
+            {
+              "path": "stage-22/manifest.json",
+              "json": {
+                "artifact": "stage-22",
+                "revision": 1
+              }
+            }
+          ]
+        },
+        "25": {
+          "status": "done",
+          "writes": [
+            {
+              "path": "stage-25/manifest.json",
+              "json": {
+                "artifact": "stage-25"
+              }
+            }
+          ]
+        },
+        "26": {
+          "status": "done",
+          "writes": [
+            {
+              "path": "stage-26-pre/numeric_truth_report.json",
+              "json": {
+                "numeric_truth_gate_pass": true
+              }
+            }
+          ]
+        },
+        "28": {
+          "status": "done",
+          "writes": [
+            {
+              "path": "stage-28/submission_format_report.json",
+              "json": {
+                "submission_format_gate_pass": true
+              }
+            },
+            {
+              "path": "stage-28/submission_bundle_manifest.json",
+              "json": {
+                "ready": true,
+                "source_stage": 25,
+                "polished_manifest": "stage-25/manifest.json"
+              }
+            }
+          ]
+        },
+        "28.5": {
+          "status": "done",
+          "writes": [
+            {
+              "path": "stage-28b/final_acceptance_report.json",
+              "json": {
+                "final_acceptance_pass": true
+              }
+            }
+          ]
+        }
+      }
+    },
+    "reviewer": {
+      "type": "fixture",
+      "default": {
+        "status": "done"
+      },
+      "results": {
+        "24": {
+          "status": "done",
+          "writes": [
+            {
+              "path": "stage-24/review_state.json",
+              "json": {
+                "review_state": "ready"
+              }
+            },
+            {
+              "path": "stage-24/AUTO_REVIEW.md",
+              "content": "review recorded\n"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

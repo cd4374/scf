@@ -1,0 +1,60 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.arc/hooks/pre-write-gate.sh\"",
+            "description": "Block reviewer agents from writing to draft.tex"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.arc/hooks/post-write-word-count.sh\"",
+            "description": "Track word count"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.arc/hooks/post-write-section-check.sh\"",
+            "description": "Verify required sections"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.arc/hooks/post-write-figure-check.sh\"",
+            "description": "Verify figures exist as files"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.arc/hooks/post-write-citation-check.sh\"",
+            "description": "Validate bib entries"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.arc/hooks/post-write-latex-check.sh\"",
+            "description": "Check LaTeX compilation"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.arc/hooks/stop-gate.sh\"",
+            "description": "Final pipeline gate"
+          }
+        ]
+      }
+    ]
+  }
+}

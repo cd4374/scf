@@ -1,0 +1,8 @@
+{
+  "session_id": "test-123",
+  "tool_name": "Write",
+  "tool_input": {
+    "file_path": "/tmp/test/some-other-file.py",
+    "content": "# not a draft"
+  }
+}

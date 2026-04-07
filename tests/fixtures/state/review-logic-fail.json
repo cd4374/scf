@@ -1,0 +1,37 @@
+{
+  "run_id": "rc-test-stage24-fail",
+  "mode": "idea_start",
+  "backend": {
+    "executor": {
+      "type": "fixture",
+      "default": {
+        "status": "done"
+      }
+    },
+    "reviewer": {
+      "type": "fixture",
+      "default": {
+        "status": "done"
+      },
+      "results": {
+        "24": {
+          "status": "failed",
+          "error_code": "E24_CODEX_MCP_REQUIRED",
+          "writes": [
+            {
+              "path": "stage-24/review_state.json",
+              "json": {
+                "status": "failed",
+                "error_code": "E24_CODEX_MCP_REQUIRED"
+              }
+            },
+            {
+              "path": "stage-24/AUTO_REVIEW.md",
+              "content": "codex mcp unavailable\n"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

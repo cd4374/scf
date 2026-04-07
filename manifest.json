@@ -1,0 +1,16 @@
+{
+  "version": "2.0.0",
+  "components": [
+    { "src": "src/CLAUDE.md",              "dest": "CLAUDE.md",                    "action": "template" },
+    { "src": "src/claude-settings.json",   "dest": ".claude/settings.json",        "action": "copy" },
+    { "src": "src/commands/",              "dest": ".claude/commands/",             "action": "copy-dir" },
+    { "src": "src/agents/",               "dest": ".claude/agents/",              "action": "copy-dir" },
+    { "src": "src/skills/",               "dest": ".claude/skills/",              "action": "copy-dir" },
+    { "src": "src/arc/",                  "dest": ".arc/",                        "action": "copy-dir" }
+  ],
+  "gitignore_additions": [
+    ".arc/state/",
+    ".arc/figures/rendered/",
+    ".arc/memory/"
+  ]
+}

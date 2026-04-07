@@ -1,0 +1,132 @@
+{
+  "run_id": "rc-test-stage28-reject",
+  "mode": "idea_start",
+  "backend": {
+    "executor": {
+      "type": "fixture",
+      "default": {
+        "status": "done"
+      },
+      "results": {
+        "22": {
+          "status": "done",
+          "writes": [
+            {
+              "path": "stage-22/manifest.json",
+              "json": {
+                "artifact": "stage-22",
+                "revision": 1
+              }
+            },
+            {
+              "path": "stage-22/manifest.json",
+              "merge": true,
+              "json": {
+                "execution_counter": 1
+              }
+            }
+          ]
+        },
+        "25": {
+          "status": "done",
+          "writes": [
+            {
+              "path": "stage-25/manifest.json",
+              "json": {
+                "artifact": "stage-25"
+              }
+            }
+          ]
+        },
+        "26": {
+          "status": "done",
+          "writes": [
+            {
+              "path": "stage-26-pre/numeric_truth_report.json",
+              "json": {
+                "numeric_truth_gate_pass": true
+              }
+            }
+          ]
+        },
+        "28": {
+          "status": "rejected",
+          "error_code": "E28_PACKAGE_INCOMPLETE",
+          "writes": [
+            {
+              "path": "stage-28/submission_format_report.json",
+              "json": {
+                "submission_format_gate_pass": false,
+                "blocking_issues": ["bundle incomplete"]
+              }
+            },
+            {
+              "path": "stage-28/submission_bundle_manifest.json",
+              "json": {
+                "ready": false,
+                "source_stage": 25,
+                "polished_manifest": "stage-25/manifest.json"
+              }
+            }
+          ]
+        },
+        "28::2": {
+          "status": "done",
+          "writes": [
+            {
+              "path": "stage-28/submission_format_report.json",
+              "json": {
+                "submission_format_gate_pass": true,
+                "blocking_issues": []
+              }
+            },
+            {
+              "path": "stage-28/submission_bundle_manifest.json",
+              "json": {
+                "ready": true,
+                "source_stage": 25,
+                "polished_manifest": "stage-25/manifest.json"
+              }
+            }
+          ]
+        },
+        "22::post_reject": {
+          "status": "done",
+          "writes": [
+            {
+              "path": "stage-22/manifest.json",
+              "json": {
+                "artifact": "stage-22",
+                "revision": 2,
+                "execution_counter": 2
+              }
+            }
+          ]
+        }
+      }
+    },
+    "reviewer": {
+      "type": "fixture",
+      "default": {
+        "status": "done"
+      },
+      "results": {
+        "24": {
+          "status": "done",
+          "writes": [
+            {
+              "path": "stage-24/review_state.json",
+              "json": {
+                "review_state": "ready"
+              }
+            },
+            {
+              "path": "stage-24/AUTO_REVIEW.md",
+              "content": "review recorded\n"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
