@@ -148,18 +148,40 @@ if command -v conda >/dev/null 2>&1; then
   fi
 fi
 
-SEMANTIC="$(json_get apis.semantic_scholar)"
-[ "$SEMANTIC" = "missing" ] && warn "semantic_scholar missing" || pass "semantic_scholar configured"
+# Check actual semantic_scholar API availability
+if curl -s "https://api.semanticscholar.org/graph/v1/paper/search?query=test&limit=1" >/dev/null 2>&1; then
+  pass "semantic_scholar API reachable"
+else
+  warn "semantic_scholar API unreachable"
+fi
 
-CODEX="$(json_get apis.codex)"
-[ "$CODEX" = "missing" ] && warn "codex missing -> /paper:codex-review degraded" || pass "codex configured"
+# Check actual Codex MCP availability (not just env.json setting)
+CODEX_ENV="$(json_get apis.codex)"
+if claude mcp list 2>/dev/null | grep -q "codex.*Connected"; then
+    pass "codex MCP connected"
+    # Warn if env.json is out of sync
+    if [ "$CODEX_ENV" = "missing" ]; then
+        warn "env.json apis.codex is 'missing' but MCP is connected - consider updating env.json"
+    fi
+else
+    warn "codex missing -> /paper:codex-review degraded"
+fi
 
+# Check wandb: if enabled in config, verify CLI availability
 WANDB_MON="$(json_get monitoring.wandb)"
 WANDB_API="$(json_get apis.wandb)"
-if [ "$WANDB_MON" = "true" ] && [ "$WANDB_API" != "configured" ]; then
-  warn "wandb monitoring enabled but API not configured"
+if [ "$WANDB_MON" = "true" ]; then
+  if command -v wandb >/dev/null 2>&1; then
+    if wandb login --list 2>/dev/null | grep -q "currently logged in"; then
+      pass "wandb CLI available and logged in"
+    else
+      warn "wandb monitoring enabled but not logged in (run: wandb login)"
+    fi
+  else
+    warn "wandb monitoring enabled but CLI not installed"
+  fi
 else
-  pass "wandb state: $WANDB_API"
+  pass "wandb monitoring disabled"
 fi
 
 if [ "$MODE" = "ssh" ]; then

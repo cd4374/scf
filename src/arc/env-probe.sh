@@ -152,13 +152,30 @@ PY_VER="$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_
 TORCH_VER="$(python3 -c 'import torch; print(torch.__version__)' 2>/dev/null || echo "")"
 CUDA_VER="$(python3 -c 'import torch; print(torch.version.cuda or "")' 2>/dev/null || echo "")"
 
-# Stage 4: API status by env vars only
-SEMANTIC="missing"
-CODEX="missing"
+# Stage 4: API status by actual probe (not env vars)
+# semantic_scholar: check by HTTP
+if curl -s "https://api.semanticscholar.org/graph/v1/paper/search?query=test&limit=1" >/dev/null 2>&1; then
+  SEMANTIC="configured"
+else
+  SEMANTIC="missing"
+fi
+
+# codex: check actual MCP connection
+if claude mcp list 2>/dev/null | grep -q "codex.*Connected"; then
+  CODEX="configured"
+else
+  CODEX="missing"
+fi
+
+# arxiv: check by HTTP
+if curl -s "http://export.arxiv.org/api/query?search_query=all:test&max_results=1" >/dev/null 2>&1; then
+  ARXIV="configured"
+else
+  ARXIV="missing"
+fi
+
+# wandb: check by env vars (no keyless probe available)
 WANDB_API="disabled"
-ARXIV="configured"
-if [ -n "${SEMANTIC_SCHOLAR_API_KEY:-}" ]; then SEMANTIC="configured"; fi
-if [ -n "${OPENAI_API_KEY:-}" ]; then CODEX="configured"; fi
 if [ "${WANDB_ENABLED:-}" = "true" ]; then
   if [ -n "${WANDB_API_KEY:-}" ]; then WANDB_API="configured"; else WANDB_API="missing"; fi
 fi
