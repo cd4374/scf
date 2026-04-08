@@ -1,0 +1,18 @@
+{
+  "agent": "citation-verifier",
+  "timestamp": "",
+  "pass": false,
+  "score": 0,
+  "decision": "fail",
+  "citations": [],
+  "issues": [
+    {
+      "location": "",
+      "type": "hallucinated_ref",
+      "description": "not run yet",
+      "severity": "blocking"
+    }
+  ],
+  "strengths": [],
+  "summary": "not run yet"
+}

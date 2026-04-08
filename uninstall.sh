@@ -1,54 +1,41 @@
 #!/usr/bin/env bash
 # scf uninstaller
-# Usage: ./uninstall.sh [--target /path/to/paper-project]
 set -euo pipefail
 
 TARGET="${TARGET:-$(pwd)}"
 while [[ $# -gt 0 ]]; do
-    case $1 in
-        --target) TARGET="$2"; shift 2 ;;
-        *) echo "Unknown option: $1"; exit 1 ;;
-    esac
+  case "$1" in
+    --target) TARGET="$2"; shift 2 ;;
+    *) echo "Unknown option: $1"; exit 1 ;;
+  esac
 done
 
-echo "Uninstalling scf from $TARGET..."
-
-# Remove .claude/ structure
-if [ -d "$TARGET/.claude" ]; then
-    rm -rf "$TARGET/.claude/commands"
-    rm -rf "$TARGET/.claude/agents"
-    rm -rf "$TARGET/.claude/skills"
-    rm -f "$TARGET/.claude/settings.json"
-    rmdir "$TARGET/.claude" 2>/dev/null || true
-    echo "  ✓ Removed .claude/"
+echo "About to remove scf artifacts from: $TARGET"
+echo "Will remove:"
+echo "  - .claude/commands/paper-*.md"
+echo "  - .claude/agents/{idea-validator,novelty-checker,literature-reviewer,logic-checker,stat-auditor,figure-auditor,citation-verifier,peer-reviewer-1,peer-reviewer-2,devils-advocate,multi-agent-debate,final-reviewer}.md"
+echo "  - .claude/skills/arc-*/"
+echo "  - .arc/"
+echo "  - .claude/settings.json (if present)"
+read -r -p "Proceed? [y/N] " CONFIRM
+if [[ "${CONFIRM:-}" != "y" && "${CONFIRM:-}" != "Y" ]]; then
+  echo "Cancelled."
+  exit 0
 fi
 
-# Remove .arc/ runtime
-if [ -d "$TARGET/.arc" ]; then
-    rm -rf "$TARGET/.arc"
-    echo "  ✓ Removed .arc/"
+if [ -d "$TARGET/.claude/commands" ]; then
+  rm -f "$TARGET/.claude/commands/paper-"*.md 2>/dev/null || true
 fi
-
-# Remove CLAUDE.md (installed by scf)
-if [ -f "$TARGET/CLAUDE.md" ]; then
-    # Check if it's an scf installed one (contains scf marker)
-    if grep -q "scf" "$TARGET/CLAUDE.md" 2>/dev/null; then
-        rm -f "$TARGET/CLAUDE.md"
-        echo "  ✓ Removed CLAUDE.md"
-    else
-        echo "  ⚠ CLAUDE.md exists but not from scf — skipped"
-    fi
+if [ -d "$TARGET/.claude/agents" ]; then
+  rm -f "$TARGET/.claude/agents/"*.md 2>/dev/null || true
 fi
-
-# Restore .gitignore (remove scf entries)
-if [ -f "$TARGET/.gitignore" ]; then
-    # Remove scf runtime entries
-    sed -i '' '/^# scf runtime$/,/^$/d' "$TARGET/.gitignore" 2>/dev/null || true
-    sed -i '' '/^\.arc\/state\/$/d' "$TARGET/.gitignore" 2>/dev/null || true
-    sed -i '' '/^\.arc\/figures\/rendered\/$/d' "$TARGET/.gitignore" 2>/dev/null || true
-    sed -i '' '/^\.arc\/memory\/$/d' "$TARGET/.gitignore" 2>/dev/null || true
-    echo "  ✓ Cleaned .gitignore"
+if [ -d "$TARGET/.claude/skills" ]; then
+  rm -rf "$TARGET/.claude/skills/arc-"* 2>/dev/null || true
 fi
+rm -f "$TARGET/.claude/settings.json" 2>/dev/null || true
+rm -rf "$TARGET/.arc" 2>/dev/null || true
 
-echo ""
-echo "✅ Uninstall complete. The paper project is now clean."
+# keep user project files by design
+# do not remove CLAUDE.md, draft.tex, references.bib
+
+echo "✅ uninstall complete"

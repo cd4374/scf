@@ -1,174 +1,79 @@
 ---
 name: arc-figure-codegen
-description: Figure generation and quality validation for academic papers. Use when generating charts, plots, or diagrams from experimental data, or when validating figure quality and authenticity.
+description: Generates reproducible paper figures from code and runs iterative visual audits to reach publication-quality outputs. Use when rendering charts, diagnosing visual defects, and improving figures under bounded loop controls.
 ---
 
-# Arc Figure Code Generation Skills
+# Arc Figure Codegen
 
-## Quick reference
-- Figures MUST derive from real experiment artifacts
-- Each figure needs provenance declaration
-- Minimum 4 figures (AI/ML typically ≥5)
-- All figures must exist as real files in `.arc/figures/rendered/`
+## Purpose
 
-## Figure requirements
+`arc-figure-codegen` 负责将实验结果转为可重复、可审查的图表资产，并通过视觉审查循环提升质量。
 
-### Count by domain
-| Domain | Minimum | Typical |
-|--------|---------|---------|
-| AI/ML | 4 | 5-8 |
-| Physics | 4 | 4-6 |
-| Simulation | 3 | 3-5 |
+## Inputs
 
-### File requirements
-- Formats: PDF (preferred), PNG (≥300 DPI)
-- Location: `.arc/figures/rendered/`
-- Naming: `fig1.pdf`, `fig2.pdf`, etc.
-- Each requires caption and label
+- 实验结果文件（结构化 JSON/CSV）
+- 图表生成代码
+- 目标论文图表需求（数量、类型、章节对应）
 
-### Provenance declaration
-Every figure must have a machine-checkable provenance marker:
-```html
-<!-- fig-src: stage-14/experiment_summary.json > metric_name -->
-```
+## Outputs
 
-### Sidecar file
-Each figure needs `<figure>.provenance.json`:
-```json
-{
-  "figure_file": "fig1.pdf",
-  "source_artifact": "stage-14/experiment_summary.json",
-  "metric_key": "h1_baseline_accuracy",
-  "generated_at": "2026-04-07T12:00:00Z"
-}
-```
+- 版本化图表文件：`fig_N_v{iter}.pdf/png`
+- 图表审查结果：`review-figures.json`（由 figure-auditor 消费）
+- figure-loop 轮次日志：`.arc/loop-logs/figure-rounds/figure-round-{N}.json`
 
-## Stage 27: Figure Quality Gate (arc-10-02) — BLOCKING
+## Generation contract
 
-Validates:
-- **Quantity**: meets venue minimum
-- **Readability**: labels, units, legends, captions, font size
-- **Style**: subfigure labels, colors, vector/raster quality
-- **Statistics**: values match experiment_summary.json
-- **Traceability**: source artifact declared
-- **Authenticity**: evidence-bearing, not decorative
+- 必须从代码渲染，不允许手工截图替代。
+- 分辨率不少于 300 DPI。
+- 每轮保留版本，不覆盖历史文件。
+- 图表与正文引用必须可对应。
 
-### Authenticity sub-checks
-1. **Sidecar exists**: `<figure>.provenance.json` present
-2. **Metric cross-check**: declared metric exists in experiment_summary.json
-3. **Visual consistency**: plotted values match declared metrics
+## Visual audit dimensions (5)
 
-### Blocking failures
-- Required figure count not met → BLOCK
-- Failed critical readability checks → BLOCK
-- Missing traceability → BLOCK
-- Failed authenticity → BLOCK
+1. 准确性（数据映射正确）
+2. 可读性（字号、线宽、标签）
+3. 无截断（坐标轴、图例、标题完整）
+4. 色彩可访问性（避免不可区分配色）
+5. 标题/说明完整（含必要上下文）
 
-## Figure generation workflow
+## Loop controls
 
-### 1. Design figure
-- Identify metric from `experiment_summary.json`
-- Determine best visualization (bar chart, line plot, etc.)
-- Map data ranges to visual encoding
+- `MAX_ITER=5`
+- `SCORE_THRESHOLD=8.0`
+- 每轮只修复 top-3 问题，避免整体重写
 
-### 2. Generate figure code
-```python
-import matplotlib.pyplot as plt
-import pandas as pd
+## Recommended round process
 
-# Load data from experiment_summary.json
-data = pd.DataFrame(...)
+1. 渲染当前版本图表
+2. 调用审查（VLM 或 figure-auditor）
+3. 汇总 top-3 问题
+4. 定向修改图表代码
+5. 重新渲染并记录分数变化
+6. 更新 loop_status.figure_loop
 
-# Create visualization
-fig, ax = plt.subplots()
-ax.bar(...)
+## Blocking conditions
 
-# Add provenance
-fig.savefig('.arc/figures/rendered/fig1.pdf')
-```
+- 图表数量不足（<4）
+- 图表文件缺失或路径失效
+- 核心图表分数长期低于阈值且达到 MAX_ITER
 
-### 3. Write sidecar
-```json
-{
-  "figure_file": "fig1.pdf",
-  "source_artifact": "stage-14/experiment_summary.json",
-  "metric_key": "h1_baseline_accuracy",
-  "generated_at": "ISO-8601"
-}
-```
+## Integration points
 
-### 4. Reference in draft
-```latex
-Figure~\ref{fig:fig1} shows...
-\begin{figure}
-  \centering
-  \includegraphics[width=0.8\textwidth]{figures/rendered/fig1.pdf}
-  \caption{...}
-  \label{fig:fig1}
-\end{figure}
-```
+- 与 `post-write-figure-check.sh` 联动验证 `\includegraphics` 文件存在性
+- 与 `paper-figure-loop` 命令共享轮次与终止条件
+- 与 `paper-export` 联动打包最终图表资产
 
-## Style rules
+## Suggested figure metadata
 
-### Captions
-- Required for every figure
-- Should describe: what is shown, key takeaway
-- Statistical info: mean ± std when applicable
+- `figure_id`
+- `version`
+- `source_data`
+- `render_script`
+- `score_breakdown`
+- `issues_fixed`
+- `timestamp`
 
-### Labels
-- Axes must have labels
-- Units required where applicable
-- Legends clear for multi-series plots
+## Notes
 
-### Subfigure labels
-- Style per venue (e.g., NeurIPS: uppercase letters A, B, C)
-- Consistent across all subfigures
-
-### Colors
-- Consistent across figures (use same palette)
-- Accessible (distinguishable for colorblind)
-- Avoid rainbow colormaps
-
-### Typography
-- Font readable: minimum 8pt
-- Title case for axis labels
-- Consistent font family
-
-## Figure types
-
-| Type | Use case |
-|------|----------|
-| Bar chart | Comparing discrete values |
-| Line plot | Trends over epochs/parameters |
-| Scatter plot | Correlation, distribution |
-| Heatmap | Matrix data, attention |
-| Table | Precise numeric comparison |
-
-## Key constraints
-
-| Constraint | Requirement |
-|------------|-------------|
-| Figure count | ≥ venue minimum |
-| File existence | Real files in `.arc/figures/rendered/` |
-| Provenance | Sidecar JSON for each figure |
-| Metric match | Plotted values must match experiment_summary |
-| Text reference | All figures referenced in draft.tex |
-
-## Anti-fabrication rules
-
-1. Never generate figure without real data
-2. Never modify plotted values
-3. Never create decorative (non-evidence-bearing) figures
-4. All figures traceable to experiment artifacts
-
-## Usage
-
-1. During paper draft (Stage 17): Plan figures with provenance
-2. During paper polish (Stage 25): Generate actual figures
-3. Stage 27: Gate validates quality and authenticity
-4. Stage 28: Final format check includes figures
-
-## See also
-- arc-writing for figure integration
-- arc-latex-formatting for figure placement
-- arc-experiment for result artifacts
+- 图表是论文主证据之一，必须可追溯到实验输出。
+- 若图表与正文 claim 不一致，优先修正数据映射，再修美观问题。

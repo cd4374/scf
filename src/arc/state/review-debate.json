@@ -1,0 +1,22 @@
+{
+  "agent": "multi-agent-debate",
+  "timestamp": "",
+  "pass": false,
+  "score": 0,
+  "decision": "major",
+  "roles": {
+    "innovator": [],
+    "pragmatist": [],
+    "contrarian": []
+  },
+  "issues": [
+    {
+      "location": "",
+      "type": "gap",
+      "description": "not run yet",
+      "severity": "blocking"
+    }
+  ],
+  "strengths": [],
+  "summary": "not run yet"
+}

@@ -7,7 +7,7 @@
           {
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR/.arc/hooks/pre-write-gate.sh\"",
-            "description": "Block reviewer agents from writing to draft.tex"
+            "description": "Block reviewer agents from writing draft.tex"
           }
         ]
       }
@@ -29,17 +29,27 @@
           {
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR/.arc/hooks/post-write-figure-check.sh\"",
-            "description": "Verify figures exist as files"
+            "description": "Verify figures exist"
           },
           {
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR/.arc/hooks/post-write-citation-check.sh\"",
-            "description": "Validate bib entries"
+            "description": "Validate bib fields"
           },
           {
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR/.arc/hooks/post-write-latex-check.sh\"",
-            "description": "Check LaTeX compilation"
+            "description": "Check LaTeX compile"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.arc/hooks/post-write-ai-pattern-check.sh\"",
+            "description": "Warn on AI writing patterns"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.arc/hooks/loop-progress-log.sh\"",
+            "description": "Log loop progress"
           }
         ]
       }
@@ -51,7 +61,7 @@
           {
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR/.arc/hooks/stop-gate.sh\"",
-            "description": "Final pipeline gate"
+            "description": "Final pipeline validation"
           }
         ]
       }

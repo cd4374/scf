@@ -11,7 +11,8 @@ tests/output/
 # macOS
 .DS_Store
 
-# scf runtime (installed to paper projects)
+# scf runtime
 .arc/state/
-.arc/figures/rendered/
 .arc/memory/
+.arc/loop-logs/
+.arc/env.json

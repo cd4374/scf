@@ -1,119 +1,102 @@
 ---
 name: arc-experiment
-description: Experiment phase skills for design, code generation, resource planning, execution, and iterative refinement. Use when designing experiments, generating code, running experiments, or improving results.
+description: Executes experiments using environment-driven routing across local, ssh, modal, or cpu modes. Use when launching, monitoring, and collecting runs while enforcing validated compute prerequisites and reproducibility constraints.
 ---
 
-# Arc Experiment Skills
+# Arc Experiment
 
-## Quick reference
-- All experiments require real execution backend (Stage 0 must pass)
-- ≥3 seeds per condition, aggregated mean ± std
-- NO FABRICATED DATA — all metrics from actual execution
-- Experiment code must compile and run before proceeding
+## Entry contract (env.json driven)
 
-## Stages
+Step 1: Read `.arc/env.json`.
+Step 2: Assert `compute.validated == true` (abort and tell user to run `validate.sh` if false).
+Step 3: Branch by `compute.mode`.
 
-### Stage 9: Experiment Design (arc-04-01) — GATE
-Design complete experiment blueprint:
-- Each hypothesis has ≥1 baseline and ≥1 ablation
-- All experiments use ≥3 seeds
-- Compute budget estimated and feasible
-- Datasets assigned tier-1 (iteration) or tier-2 (final validation)
+## Inputs
 
-**Output**: `exp_plan.yaml`, `design_rationale.md`
+- `.arc/env.json`
+- `.arc/state/pipeline-status.json`
+- 实验配置与代码
+- 数据引用与种子配置
 
-### Stage 9.5: Reproducibility Design Gate (arc-04-04) — BLOCKING
-Freeze reproducibility contract before coding:
-- Seed policy: ≥3 seeds without justification
-- Environment lock: dependency specification
-- Statistical method: comparison approach documented
+## Common outputs
 
-**Output**: `reproducibility_design_report.json`
+- 实验结果 JSON（含指标、配置、时间戳）
+- `pipeline-status.json.active_experiments` 更新
+- 失败时 `manual-follow-up` 标记
 
-### Stage 10: Code Generation (arc-04-02)
-Generate runnable multi-file experiment project:
-- All hypotheses, baselines, ablations implemented
-- Output format: `condition=X seed=N metric: value`
-- Finalize() writes `results.json`
-- `requirements.txt` + `README.md`
+## Local mode (`compute.mode: local`)
 
-**Output**: `experiment/` directory, `experiment_spec.md`
+必读字段：
+- `compute.backend` (`cuda` / `mps`)
+- `software.activate_cmd`
+- `compute.experiment_time_limit`
 
-### Stage 11: Resource Planning (arc-04-03)
-Build time-resolved execution schedule:
-- `total_time_sec` ≤ available time budget
-- All (condition, dataset, seed) combinations scheduled
-- Parallel groups for GPU utilization
-- ≥2 intermediate checkpoints
+执行要求：
+- 使用 `nohup` 或 `screen` 后台运行
+- 记录 PID 或会话名到 `active_experiments`
+- 超时（默认 4h）停止自动运行并标记 `manual-follow-up`
 
-**Output**: `schedule.json`
+## SSH mode (`compute.mode: ssh`)
 
-### Stage 12: Experiment Run (arc-05-01)
-Execute all scheduled runs with real code:
-- **REQUIRES execution_capable: true from Stage 0**
-- Auto-diagnosis of failures
-- Auto-repair of common issues (OOM, NaN, missing deps)
-- All runs complete → aggregated metrics
+必读字段：
+- `compute.ssh.host`
+- `compute.ssh.remote_dir`
+- `compute.ssh.code_sync` (`rsync` / `git`)
+- `software.activate_cmd`
 
-**Output**: `runs/` directory, `experiment_summary.json`, `execution_log.json`
+代码同步：
+- rsync:
+  `rsync -avz --exclude='.git' --exclude='.arc/env.json' ./ ${host}:${remote_dir}/`
+- git:
+  `git push origin HEAD && ssh ${host} "cd ${remote_dir} && git pull"`
 
-### Stage 13: Iterative Refine (arc-05-02)
-Improve via edit-run-eval cycles:
-- Auto-diagnosis of experiment quality
-- Auto-repair of deficiencies
-- Exit: convergence (2 iterations no improvement) OR budget ≥95% exhausted
-- Best configuration snapshot
+远端运行：
+- 使用命名 screen 会话：`scf-exp-{YYYYMMDD-HHMM}`
+- 记录会话名到 `active_experiments`
+- 监控：`ssh ${host} "screen -ls | grep scf-exp"`
+- 收集：`ssh cat` 或 `scp`
 
-**Output**: `refinement_log.json`, `experiment_final/`, updated `experiment_summary.json`
+W&B：
+- 若 `monitoring.wandb=true`，通过 `wandb.Api()` 获取曲线
 
-## Execution backends
+时间限制：
+- 超过 `compute.experiment_time_limit`，跳过自动执行并标记 `manual-follow-up`
 
-| Backend | Use case |
-|---------|----------|
-| Local GPU | NVIDIA CUDA or Apple MPS |
-| Local CPU | CPU-only when no GPU |
-| SSH Remote | Powerful remote GPU server |
+## Modal mode (`compute.mode: modal`)
 
-## Auto-repair protocol
+- 读取 `compute.modal.app_name`
+- 执行：`modal run launcher.py`
+- 通过 Modal API 轮询状态
 
-| Error | Fix | Max attempts |
-|-------|-----|---------------|
-| GPU OOM | batch_size × 0.5 | 2 |
-| NaN loss | learning_rate × 0.1, gradient clipping | 2 |
-| Missing dependency | pip install | 1 |
-| Code crash | No auto-fix | 0 |
+## CPU mode (`compute.mode: cpu`)
 
-## Key constraints
+- 执行本地 CPU 验证实验
+- 明确提示不适合大规模训练
 
-| Stage | Constraint |
-|-------|------------|
-| 12 | Execution backend required — no fabricated data |
-| 13 | Budget tracking — convergence OR budget exhaustion |
-| All | ≥3 seeds per condition |
+## Reproducibility constraints
 
-## Quality contract
+- 固定种子（如 `np.random.seed(42)`）
+- 保存结构化结果
+- 记录运行环境与依赖
 
-`experiment_summary.json` MUST have:
-- `completed_runs` = `total_runs`
-- Every condition: `metric_mean` + `metric_std` across ≥3 seeds
-- No NaN or Inf values
-- All from ACTUAL execution (no fabrication)
+## Blocking conditions
 
-## Anti-fabrication rules
+- `compute.validated=false`
+- 缺少关键字段（host/remote_dir/activate_cmd 等）
+- 实验结果无结构化输出
 
-1. Never generate metrics without actual code execution
-2. Fail fast if no execution backend
-3. All run logs preserved for verification
-4. Metrics must vary between seeds (real randomness)
+## Integration points
 
-## Usage
+- 与 `arc-reproducibility`：写入数据版本、环境快照、复现实验记录
+- 与 `arc-analysis`：产出用于 claim-evidence 映射的结果文件
+- 与 `stop-gate.sh`：ssh 模式需管理 `active_experiments`
 
-After research phase completes, pipeline automatically enters experiment phase:
-1. Design approved → code generation
-2. Code generated → resource planning
-3. Resources planned → execution
-4. Execution complete → iterative refinement if needed
+## Failure handling
 
-## See also
-- arc-analysis for result interpretation
-- arc-research for hypothesis definitions
+- 外部命令失败时记录原因，不静默跳过
+- 网络波动场景优先保留已生成结果并标注状态
+- 需要人工介入时明确给出后续动作
+
+## Notes
+
+- 本 skill 只定义实验执行契约，不绑定具体模型训练脚本实现。

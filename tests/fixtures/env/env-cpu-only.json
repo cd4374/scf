@@ -1,0 +1,1 @@
+{"compute":{"mode":"cpu","backend":"cpu","validated":true},"software":{"conda_env":"scf-test","python_version":"3.10"},"apis":{"semantic_scholar":"missing","codex":"missing","wandb":"disabled"}}

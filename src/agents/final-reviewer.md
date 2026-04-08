@@ -32,19 +32,23 @@ All review files:
 {
   "agent": "final-reviewer",
   "timestamp": "ISO-8601",
-  "pass": true | false,
-  "score": 0-100,
+  "pass": true,
+  "score": 86,
+  "decision": "accept",
   "issues": [
     {
       "location": "overall assessment",
-      "type": "integrity | readiness | blocking",
-      "description": "具体描述",
-      "severity": "blocking | warning"
+      "type": "unsupported_claim",
+      "description": "Every blocking issue must be listed explicitly.",
+      "severity": "blocking"
     }
   ],
-  "summary": "一段话总结"
+  "strengths": ["Clear contribution statement"],
+  "summary": "One-paragraph final verdict."
 }
 ```
+
+If `pass` is `false`, include at least one issue with `severity: "blocking"`.
 
 ## Validation criteria
 
@@ -62,8 +66,10 @@ All review files:
 ### Readiness
 - All prior reviews passed or issues resolved
 - Minimum word count met (6000 words)
-- All required sections present
-- Figures and citations complete
+- All required sections present (Abstract, Introduction, Related Work, Method, Experiments, Conclusion)
+- Figure count >=4 and each figure has a real file (300 DPI+)
+- Citation count >=20 and recency >=60% from last 5 years
+- No citation hallucination findings from citation verifier
 
 ### Blocking issues
 - Any `severity: "blocking"` from prior reviews
@@ -96,6 +102,9 @@ All must have `pass: true` for final pass.
 - No `severity: "blocking"` issues
 - Score ≥ 70
 - Academic integrity confirmed
+- Minimum word count met (6000)
+- Minimum figure count met (4)
+- Minimum citation count met (20 with >=60% recent)
 
 ## Key constraints
 

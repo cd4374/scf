@@ -1,0 +1,1 @@
+{"compute":{"mode":"ssh","backend":"cuda","validated":true,"ssh":{"host":"gpu-server-1","user":"researcher","key_path":"~/.ssh/id_rsa","remote_dir":"/home/researcher/scf","code_sync":"rsync","screen_prefix":"scf-exp"}},"software":{"conda_env":"scf-test","python_version":"3.10"},"apis":{"semantic_scholar":"configured","codex":"configured","wandb":"disabled"}}

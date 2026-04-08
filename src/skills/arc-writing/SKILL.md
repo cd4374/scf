@@ -1,154 +1,86 @@
 ---
 name: arc-writing
-description: Writing phase skills for template resolution, outline creation, drafting, peer review, and revision. Use when creating the paper structure, writing content, or revising based on feedback.
+description: Produces and revises manuscript drafts under hard academic quality gates. Use when building section structure, integrating evidence-backed claims, and iterating through review feedback before final export.
 ---
 
-# Arc Writing Skills
+# Arc Writing
 
-## Quick reference
-- Abstract: 180-220 words (strict), starts with context not "We"
-- Title: ≤14 words, method name 2-5 characters
-- All figures must be evidence-bearing (from real experiments)
-- De-AI writing patterns required (no "delve", "pivotal", etc.)
+## Purpose
 
-## Stages
+`arc-writing` 负责把研究结果组织为符合投稿要求的论文文本，并持续迭代到门控通过。
 
-### Stage 15.7: Template Resolve (arc-07-00)
-Resolve target venue into machine-checkable contract:
-- Supported: neurips, iclr, icml, aaai, acl, cvpr, ieee, elsevier, springer
-- Compile engine: pdflatex + bibtex
-- Required/forbidden sections per venue
-- Figure count minimums and style rules
+## Mandatory quality gates
 
-**Output**: `template/template_manifest.json`, `template_notes.md`
+- 正文字数 `>=6000`（不含参考文献）
+- 必要章节：Abstract / Introduction / Related Work / Method / Experiments / Conclusion
+- 图表数量 `>=4` 且实体文件存在
+- 引用满足四层验证与数量/时效门槛
+- LaTeX 可无错编译
+- 数字结论必须来自真实实验
 
-### Stage 16: Paper Outline (arc-07-01)
-Build structured outline with evidence mapping:
-- Abstract: 180-220 words PMR+ (Problem, Method, Results, significance)
-- Title: ≤14 words, method name 2-5 chars
-- All sections present (Intro, Related Work, Method, Experiments, etc.)
-- Each hypothesis maps to Experiments section
-- Limitations subsection required
+## Inputs
 
-**Output**: `outline.md`
+- `.arc/state/pipeline-status.json`
+- `.arc/state/idea.json`
+- 实验结果与分析结论
+- `.arc/state/review-*.json`
+- `references.bib`
 
-### Stage 17: Paper Draft (arc-07-02)
-Write complete paper following outline:
+## Outputs
 
-**Abstract (strict 180-220 words):**
-- Problem → Method → Results → Significance
-- Starts with context (NOT "We" or "This paper")
-- ≤3 numeric values
-- No citations or undefined acronyms
+- `draft.tex`
+- 写作阶段相关状态更新（word_count、blocking_issues）
 
-**All sections:**
-- `\ref{}`/`\cref{}` must be valid
-- All evidence from `experiment_summary.json`
-- No unsubstantiated claims
-- Method name consistent throughout
+## Draft protocol
 
-**Figure provenance declaration:**
-```html
-<!-- fig-src: stage-14/experiment_summary.json > metric_name -->
-```
+1. 生成大纲并映射到必须章节。
+2. 每个核心 claim 绑定证据来源（实验结果或文献）。
+3. 合并图表与引用，确保文图引一致。
+4. 保持术语、符号、实验设置在全文一致。
 
-**De-AI polish pass:**
-- delve → examine/investigate
-- pivotal → central/key
-- groundbreaking → substantial
-- Remove: "It is worth noting", "Importantly", "Notably"
+## Review-loop integration
 
-**Output**: `paper_draft.md`
+- 输入 `peer-reviewer-1/2` 与 `devils-advocate` 反馈。
+- 每轮仅修复优先级最高问题，避免全量重写。
+- 保留修订理由，便于后续 final-review 追溯。
 
-### Stage 17.5: Writing Compliance Gate (arc-07-05) — BLOCKING
-Structure/marker/anti-slop gate before peer review:
-- Required sections present
-- No TODO/FIXME/XXX/[VERIFY] markers
-- No forbidden AI writing patterns
-- Limitations section exists and honest
+## Anti-fabrication rules
 
-**Output**: `writing_compliance_report.json`
+- 未运行实验不得生成具体数值结论。
+- 未验证引用不得作为关键论据。
+- 对不确定结果使用保守表述并标注限制。
 
-### Stage 18: Peer Review (arc-07-03)
-Generate ≥2 simulated reviews with distinct personas:
-- Theory-focused reviewer
-- Reproducibility-focused reviewer
-- Each: ≥1 major concern with specific section reference
-- Clear Accept/Borderline/Reject recommendation
+## Reproducibility linkage
 
-**Output**: `reviews.md`
+Experiments 节必须包含 Reproducibility Statement，说明：
+- 随机种子策略
+- 环境快照位置（`.arc/environment.yml`）
+- 数据版本记录位置（`.arc/state/reproducibility.json`）
 
-### Stage 18.5: Bibliography Quality Gate (arc-08-05) — BLOCKING
-Bibliography quality check:
-- All in-text citation keys have bibliography entries
-- No unresolved verification markers
-- Required metadata fields present
-- No duplicate key conflicts
+## Failure conditions
 
-**Output**: `bibliography_quality_report.json`
+以下情况不得推进到 export：
+- blocking issue 未清零
+- 字数/章节/图表/引用门槛未达标
+- LaTeX 编译失败
 
-### Stage 19: Paper Revision (arc-07-04)
-Address major peer review concerns:
-- All major concerns tracked in `revision_log.md`
-- Action per concern: Addressed / Partially addressed / Not addressed
-- Location in revised paper documented
-- No new unsubstantiated claims
+## Style constraints
 
-**Output**: `paper_revised.md`, `revision_log.md`
+- 优先清晰、简洁、可验证表述。
+- 避免夸大措辞与空泛“AI 味”模板表达。
 
-## Required sections
+## Expected handoff
 
-| Venue type | Required |
-|------------|----------|
-| Conference | Abstract, Intro, Related Work, Method, Experiments, Conclusion, Broader Impact |
-| Journal | Abstract, Intro, Related Work, Method, Experiments, Results, Discussion, Conclusion |
+写作阶段完成后，应可直接进入：
+- `paper-review-loop`
+- `paper-citation-loop`
+- `paper-figure-loop`
+- `paper-export`（在全部门控通过后）
 
-## Figure requirements
+## Minimal completion checklist
 
-- Minimum 4 figures (AI/ML typically ≥5)
-- Each must be real file in `.arc/figures/rendered/`
-- Each must be referenced in text
-- Each must have provenance declaration
-
-## Word count targets
-
-| Section | Target words |
-|---------|-------------|
-| Abstract | 180-220 |
-| Introduction | 500-900 |
-| Related Work | ≥600 |
-| Method | 800-1500 |
-| Experiments | 1200-2000 |
-| Conclusion | 200-400 |
-
-## Key constraints
-
-| Stage | Constraint |
-|-------|------------|
-| 16 | Abstract word count strict |
-| 17 | Figure provenance required |
-| 17.5 | Markers block pipeline |
-| 18 | ≥2 distinct reviewer personas |
-| 19 | All major concerns tracked |
-
-## Anti-hallucination in writing
-
-1. Never claim results not in `experiment_summary.json`
-2. Every figure tied to real upstream artifact
-3. Citation claims must have verifiable references
-4. No decorative figures — all evidence-bearing
-
-## Usage
-
-After research decision proceeds:
-1. Template resolve → venue contract
-2. Outline → structure with word targets
-3. Draft → full content with provenance
-4. Compliance gate → structure check
-5. Peer review → stress test
-6. Revision → address concerns
-
-## See also
-- arc-latex-formatting for template details
-- arc-citation-style for bibliography rules
-- arc-figure-codegen for figure generation
+- [ ] 必要章节齐全
+- [ ] 关键 claims 全部有证据映射
+- [ ] 图表和引用计数达标
+- [ ] 可重复性声明已写入
+- [ ] 编译检查通过

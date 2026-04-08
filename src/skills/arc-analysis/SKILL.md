@@ -1,109 +1,99 @@
 ---
 name: arc-analysis
-description: Analysis phase skills for result analysis, statistical validation, and research decisions. Use when interpreting experimental results or deciding between proceed/refine/pivot paths.
+description: Evaluates experiment outcomes and constructs claim-to-evidence mappings for paper decisions. Use when validating statistical soundness, resolving unsupported claims, and preparing structured review inputs for downstream gates.
 ---
 
-# Arc Analysis Skills
+# Arc Analysis
 
-## Quick reference
-- Validate data BEFORE analyzing — no NaN/Inf allowed
-- All claims require quantitative evidence from experiments
-- Research decision caps: MAX 2 pivot/refine cycles total
+## Scope
 
-## Stages
+`arc-analysis` 负责把实验结果转化为可审查、可追溯的论文证据。
 
-### Stage 14: Result Analysis (arc-06-01)
-Transform raw metrics into evidence-based conclusions:
+核心任务：
+- 结果统计与一致性检查
+- claim-to-evidence 映射
+- 失败模式识别与阻断问题输出
 
-**Data Validation (mandatory before analysis):**
-- No NaN/Inf in metrics
-- Sufficient variance across seeds
-- No identical condition results
-- Reasonable metric magnitudes
-- Baseline sanity (above random chance)
+## Inputs
 
-**Analysis outputs:**
-- Per-hypothesis: SUPPORTED / NOT_SUPPORTED / INCONCLUSIVE
-- Ablation effects quantified
-- `results_table.tex` with mean ± std
+- `.arc/state/pipeline-status.json`
+- `.arc/state/idea.json`
+- 实验结果 JSON（建议 `results/latest.json` 或等价结构化产物）
+- `draft.tex`（只读，用于定位 claim）
+- `.arc/state/reproducibility.json`
 
-**Output**: `data_validation.json`, `analysis.md`, `results_table.tex`
+## Output contracts
 
-### Stage 15: Research Decision (arc-06-02)
-Make PROCEED / REFINE / PIVOT decision:
+- `.arc/state/review-stat.json`（统计审查结果）
+- 必要时更新 `.arc/state/pipeline-status.json.blocking_issues`
 
-| Decision | Next stage | Counts against cap |
-|----------|------------|-------------------|
-| proceed | → arc-06-03 gate → arc-07-00 | no |
-| refine | → arc-05-02 | yes |
-| pivot | → arc-03-02 | yes |
+## Procedure
 
-**MAX 2 pivot/refine cycles total** — forced proceed after cap
+1. 读取实验结果主文件，确认指标字段完整（指标值、配置、时间戳）。
+2. 抽取草稿中的核心 quantitative claims。
+3. 建立 claim -> evidence 映射表：每条 claim 必须能对应实验结果中的具体字段或图表来源。
+4. 校验统计一致性：
+   - 指标方向是否与文中叙述一致
+   - 关键比较是否有基线或消融支持
+   - 数值是否超出合理范围（明显异常值）
+5. 生成问题清单，按 `blocking | major | minor` 分级。
+6. 将结构化结论写入 `review-stat.json`，供后续 review-loop/final-review 使用。
 
-**Output**: `decision.md`, `decision_routing.json`
+## Blocking rules
 
-### Stage 15.5: Result Claim Gate (arc-06-03) — BLOCKING
-Freeze claim-scope before writing:
-- All contribution claims classified: allowed / allowed_with_caveat / disallowed
-- Unsupported core claims must be marked `disallowed`
-- `allowed_with_caveat` claims need explicit wording constraints
+以下情况应标记 blocking：
+- 关键 claim 无可追溯证据
+- 文中数值与结果文件不一致
+- 复现实验失败且偏差超过可接受范围（通常 ±5%）
+- 统计结论依赖不存在的实验
 
-**Output**: `claim_scope_report.json`
+## Severity guidance
 
-## Data validation checks
+- blocking：影响结论真实性或可验证性
+- major：影响可信度但可通过补实验修复
+- minor：表述或局部统计格式问题
 
-| Check | Severity if fail |
-|-------|------------------|
-| NaN/Inf in metrics | CRITICAL → block |
-| Zero variance across seeds | WARNING |
-| Identical condition results | WARNING |
-| Metrics outside range | CRITICAL or WARNING |
-| Baseline near random | WARNING |
+## Integration points
 
-## Hypothesis assessment
+- 与 `arc-reproducibility` 联动：读取种子、环境快照、数据版本记录。
+- 与 `arc-writing` 联动：将 unsupported claims 反馈给写作修订。
+- 与 `final-reviewer` 联动：输出用于综合裁决。
 
-| Status | Condition |
-|--------|-----------|
-| SUPPORTED | metric_mean ≥ success_threshold |
-| NOT_SUPPORTED | metric_mean < baseline - 0.01 |
-| INCONCLUSIVE | Neither above applies |
+## Quality gates linkage
 
-## Decision evidence requirements
+分析结论必须支持以下门控：
+- 实验结果真实性（无捏造）
+- claim-evidence 可追溯
+- 与图表/引用的一致性
 
-- **proceed**: ALL hypotheses SUPPORTED with strong evidence
-- **refine**: Salvageable (adjustments can fix)
-- **pivot**: Fundamentally flawed (core claim wrong)
+## Failure handling
 
-## Key constraints
+- 输入文件缺失时，输出 `pass=false`，并给出明确缺失项位置。
+- 遇到格式不合法数据时，不静默跳过，记录为 issue。
 
-| Stage | Constraint |
-|-------|------------|
-| 14 | Data validation MUST pass before analysis |
-| 15 | Loop cap = 2 total (forced proceed after) |
-| 15.5 | No unsupported claims enter writing |
+## Output JSON template
 
-## Quality contract
+```json
+{
+  "agent": "stat-auditor",
+  "timestamp": "ISO-8601",
+  "pass": false,
+  "score": 62,
+  "decision": "major",
+  "issues": [
+    {
+      "location": "Section 4.2",
+      "type": "unsupported_claim",
+      "description": "Claimed +6.1% gain has no matching metric entry in results JSON.",
+      "severity": "blocking"
+    }
+  ],
+  "strengths": ["Ablation structure is clear"],
+  "summary": "Main claim-evidence mismatch must be fixed before final review."
+}
+```
 
-`analysis.md` MUST have:
-- Every hypothesis with SUPPORTED/NOT_SUPPORTED/INCONCLUSIVE + evidence
-- `results_table.tex` valid LaTeX with mean ± std
-- Statistical claims grounded in actual metric values
-- Ablation effects quantified
+## Notes
 
-## Loop cap enforcement
-
-When `pivot_count ≥ 2`:
-1. Decision MUST be `proceed`
-2. Set `forced_proceed: true`
-3. Write `quality_warning.txt`
-
-## Usage
-
-After experiment execution completes:
-1. Result analysis validates data and interprets results
-2. Research decision routes: more experiments or move to writing
-3. Claim gate freezes what can be written about
-
-## See also
-- arc-experiment for execution context
-- arc-writing for paper creation
+- 保持输出简洁、结构化，优先支持自动门控和后续循环修复。
+- 不在本 skill 内直接改写论文正文，仅输出审查结论和修复方向。

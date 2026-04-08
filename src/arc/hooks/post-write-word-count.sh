@@ -1,28 +1,25 @@
 #!/usr/bin/env bash
-# post-write-word-count.sh — PostToolUse hook
-# Tracks word count after draft.tex modifications
-
+set -euo pipefail
 INPUT=$(cat)
-FILE=$(echo "$INPUT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('tool_input',{}).get('file_path',''))" 2>/dev/null || echo "")
+FILE=$(python3 -c 'import json,sys; print(json.load(sys.stdin).get("tool_input",{}).get("file_path",""))' <<<"$INPUT" 2>/dev/null || true)
 [[ "$FILE" != *"draft.tex" ]] && exit 0
-
 DRAFT="$CLAUDE_PROJECT_DIR/draft.tex"
 [ ! -f "$DRAFT" ] && exit 0
-
-WORD_COUNT=$(grep -v '^\s*%' "$DRAFT" | sed 's/\\[a-zA-Z]*\*\?//g; s/[{}]//g' | wc -w | tr -d ' ')
 MIN_WORDS=6000
-
-python3 -c "
-import json, os
-f = os.environ['CLAUDE_PROJECT_DIR']+'/.arc/state/pipeline-status.json'
-try: s = json.load(open(f))
-except: s = {}
-s['word_count'] = $WORD_COUNT
-s['word_count_ok'] = $WORD_COUNT >= $MIN_WORDS
-open(f,'w').write(json.dumps(s, indent=2))
-" 2>/dev/null
-
-if [ "$WORD_COUNT" -lt "$MIN_WORDS" ]; then
-    echo "⚠️  Word count: $WORD_COUNT / $MIN_WORDS minimum. Keep writing." >&2
-fi
+WORD_COUNT=$(grep -v '^\s*%' "$DRAFT" | sed 's/\\[a-zA-Z]*\*\?//g; s/[{}]//g' | wc -w | tr -d ' ')
+STATE="$CLAUDE_PROJECT_DIR/.arc/state/pipeline-status.json"
+python3 - <<'PY' "$STATE" "$WORD_COUNT" "$MIN_WORDS"
+import json,sys,datetime
+path,wc,minw=sys.argv[1],int(sys.argv[2]),int(sys.argv[3])
+try:
+    data=json.load(open(path))
+except Exception:
+    data={}
+data['word_count']=wc
+data['word_count_ok']=wc>=minw
+data['last_updated']=datetime.datetime.utcnow().replace(microsecond=0).isoformat()+"Z"
+with open(path,'w') as f:
+    json.dump(data,f,indent=2)
+PY
+[ "$WORD_COUNT" -lt "$MIN_WORDS" ] && echo "⚠ Word count: $WORD_COUNT / $MIN_WORDS" >&2
 exit 0

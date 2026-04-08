@@ -1,35 +1,34 @@
 ---
 name: paper-export
-description: Package the final paper for submission
+description: Package final deliverables with reproducibility bundle
 usage: /paper:export
 ---
 
-Package the final paper for submission.
+## Prerequisites
 
-Prerequisites: review-final.json must have pass: true
+- `.arc/state/review-final.json` has `pass: true`.
+- All auto-loops are `completed` or `max-iter-reached`.
+- `.arc/state/review-codex.json` exists (or explicitly records degraded cross-model mode).
 
-Steps:
-1. Verify review-final.json exists and pass is true
-2. Run LaTeX compilation: pdflatex → bibtex → pdflatex → pdflatex
-3. Collect output: paper.pdf, paper.tex, references.bib, .arc/figures/rendered/
-4. Create submission/ directory with all required files
-5. Verify PDF compiles and figures are embedded
-6. Report final word count, page count, and figure count
+## Compile order
 
-Final acceptance gates (all must pass):
-- final-reviewer: pass: true
-- word_count >= 6000
-- figure_count >= 4
-- LaTeX compiles without errors
+1. `pdflatex`
+2. `bibtex`
+3. `pdflatex`
+4. `pdflatex`
 
-Example output:
-```
-=== Export Complete ===
+Compile must succeed locally with exit code 0 and produce non-empty PDF.
 
-Paper: submission/paper.pdf
-Word count: 6234
-Page count: 9 (NeurIPS limit: 9)
-Figures: 5
+## Export outputs
 
-Ready for submission to NeurIPS 2026
-```
+- `paper.pdf`
+- `paper.tex`
+- `references.bib`
+- `figures/`
+- `reproducibility-bundle/` containing:
+  - code
+  - `.arc/environment.yml`
+  - `requirements.txt`
+  - fixed-seed records
+  - dataset references
+  - reproduction summary

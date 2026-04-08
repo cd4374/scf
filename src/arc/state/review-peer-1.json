@@ -1,0 +1,26 @@
+{
+  "agent": "peer-reviewer-1",
+  "timestamp": "",
+  "pass": false,
+  "score": 0,
+  "decision": "reject",
+  "dimension_scores": {
+    "novelty": 0,
+    "technical_rigor": 0,
+    "experimental_sufficiency": 0,
+    "writing_clarity": 0,
+    "citation_accuracy": 0,
+    "reproducibility": 0,
+    "impact": 0
+  },
+  "issues": [
+    {
+      "location": "",
+      "type": "gap",
+      "description": "not run yet",
+      "severity": "blocking"
+    }
+  ],
+  "strengths": [],
+  "summary": "not run yet"
+}

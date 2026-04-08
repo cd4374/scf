@@ -1,167 +1,147 @@
 ---
 name: arc-state-management
-description: State management protocol for reading and writing pipeline state files. Use when checking pipeline status, updating state, or understanding state file formats.
+description: Maintains JSON state contracts as the cross-agent and cross-session source of execution truth. Use when validating, updating, and synchronizing pipeline, review, loop, and reproducibility state files.
 ---
 
 # Arc State Management
 
-## Quick reference
-- Pipeline state: `.arc/state/pipeline-status.json` — read FIRST after interruption
-- Review outputs: `.arc/state/review-*.json` — never edit draft.tex directly
-- All state files are JSON format
+## Purpose
 
-## State files
+`arc-state-management` 定义 `.arc/state/*.json` 的协议，确保命令、skills、agents 在同一状态模型上协作。
 
-### pipeline-status.json
-Main pipeline state file:
+## State bus contract
+
+- 跨 agent / 跨会话状态只能通过 `.arc/state/*.json` 传递
+- 不依赖对话上下文作为状态源
+
+## Required pipeline stage values
+
+- not-started
+- idea-exploration
+- idea-validation
+- literature-review
+- synthesis
+- hypothesis-generation
+- experiment-design
+- experiment-run
+- result-analysis
+- writing
+- figure-generation
+- citation-verification
+- peer-review
+- codex-review
+- final-review
+- export
+- completed
+
+## Required files
+
+- `pipeline-status.json`
+- `idea.json`
+- `reproducibility.json`
+- `review-idea.json`
+- `review-novelty.json`
+- `review-literature.json`
+- `review-logic.json`
+- `review-stat.json`
+- `review-figures.json`
+- `review-citations.json`
+- `review-peer-1.json`
+- `review-peer-2.json`
+- `review-devil.json`
+- `review-debate.json`
+- `review-codex.json`
+- `review-final.json`
+
+## pipeline-status.json required fields
+
+- `stage`
+- `journal`
+- `word_count`
+- `word_count_ok`
+- `figure_count`
+- `active_agent`
+- `stages_completed`
+- `last_updated`
+- `loop_status`
+- `ai_pattern_warnings`
+- `active_experiments`
+
+## loop_status schema
+
 ```json
 {
-  "stage": "not-started | idea-validation | literature-review | synthesis | experiment-design | experiment-run | result-analysis | writing | peer-review | final-review | export",
-  "journal": "neurips | icml | iclr | aaai | ieee | elsevier | springer | acl",
-  "word_count": 0,
-  "word_count_ok": false,
-  "figure_count": 0,
-  "active_agent": "",
-  "stages_completed": [],
-  "last_updated": "ISO-8601"
+  "idea_loop": {
+    "current_round": 0,
+    "max_rounds": 3,
+    "best_score": 0,
+    "status": "not-started|running|completed|max-iter-reached"
+  },
+  "review_loop": {
+    "current_round": 0,
+    "max_rounds": 4,
+    "best_score": 0,
+    "score_history": [],
+    "status": "not-started|running|completed|max-iter-reached|human-intervention-needed"
+  },
+  "figure_loop": {
+    "current_round": 0,
+    "max_rounds": 5,
+    "figures": {},
+    "status": "not-started|running|completed|max-iter-reached"
+  },
+  "citation_loop": {
+    "current_round": 0,
+    "max_rounds": 3,
+    "verified_count": 0,
+    "hallucinated_count": 0,
+    "status": "not-started|running|completed|max-iter-reached"
+  }
 }
 ```
 
-### idea.json
-Research idea input:
-```json
-{
-  "research_question": "",
-  "keywords": [],
-  "target_journal": "",
-  "created_at": "ISO-8601"
-}
-```
+## Review schema baseline
 
-### review-*.json
-Reviewer agent outputs (6 types):
-```json
-{
-  "agent": "agent-name",
-  "timestamp": "ISO-8601",
-  "pass": true | false,
-  "score": 0-100,
-  "issues": [
-    {
-      "location": "Section X, paragraph Y",
-      "type": "unsupported_claim | circular | contradiction | gap | missing_ref | wrong_format | stat_error",
-      "description": "具体描述",
-      "severity": "blocking | warning"
-    }
-  ],
-  "summary": "一段话总结"
-}
-```
+每个 `review-*.json` 应满足统一结构：
+- `agent`
+- `timestamp`
+- `pass`
+- `score`
+- `decision`
+- `issues[]`
+- `strengths[]`
+- `summary`
 
-Reviewer output files:
-- `review-idea.json` — idea validation
-- `review-literature.json` — literature coverage
-- `review-logic.json` — logical consistency
-- `review-stat.json` — statistical audit
-- `review-figures.json` — figure quality
-- `review-final.json` — final acceptance
+约束：`pass=false` 时至少一个 `issues[].severity=blocking`。
 
-## State reading protocol
+## Update rules
 
-### After interruption
-1. Read `.arc/state/pipeline-status.json`
-2. Identify current stage
-3. Read corresponding `review-*.json` if exists
-4. Resume from appropriate point
+1. 所有状态更新应保持 JSON 合法性。
+2. 仅更新必要字段，避免覆盖无关状态。
+3. 关键阶段切换必须同步 `last_updated` 与 `stages_completed`。
+4. loop 轮次日志与 loop_status 必须同步。
 
-### After context compaction
-1. Read `.arc/state/pipeline-status.json`
-2. Re-orient to current stage
-3. Continue with `/paper:resume`
+## Consistency matrix
 
-## State writing protocol
+以下内容必须一致：
+- stage 列表：commands/docs/skills/state 模板
+- reviewer 名称：commands/hooks/agents/skills
+- loop 参数：CLAUDE.md/commands/docs
 
-### Pipeline state updates
-Write to `.arc/state/pipeline-status.json`:
-- Stage advancement
-- Word count updates
-- Figure count updates
-- Active agent tracking
+## Failure handling
 
-### Review agent outputs
-Reviewers write to `.arc/state/review-*.json`:
-- NEVER edit `draft.tex` directly
-- Output structured JSON with issues
-- Main agent reads review and applies fixes
+- 文件缺失：创建或恢复模板并记录 warning
+- JSON 不合法：停止推进并返回 blocking issue
+- 字段缺失：填默认值并记录兼容修复说明
 
-## Reviewer isolation rules
+## Integration points
 
-**CRITICAL**: Reviewer subagents are READ-ONLY:
-- Tools: `Read`, `Glob`, `Grep` ONLY
-- NO Write/Edit tools
-- Output goes to `review-*.json`
-- Main agent applies fixes
+- `arc-pipeline`：阶段推进与阻断状态
+- `arc-experiment`：active_experiments
+- `arc-citation-style`：citation loop 统计
+- hooks：字数/章节/图表/AI 警告回写
 
-This isolation ensures reviewers cannot modify the paper directly.
+## Notes
 
-## Stage transitions
-
-When a stage completes:
-1. Update `pipeline-status.json` with new stage
-2. Add completed stage to `stages_completed`
-3. Update `last_updated` timestamp
-
-## State file locations
-
-```
-.arc/
-├── state/
-│   ├── pipeline-status.json
-│   ├── idea.json
-│   ├── review-idea.json
-│   ├── review-literature.json
-│   ├── review-logic.json
-│   ├── review-stat.json
-│   ├── review-figures.json
-│   └── review-final.json
-├── hooks/
-│   └── *.sh (7 gate/quality scripts)
-├── figures/
-│   └── rendered/
-└── memory/
-    ├── domain-knowledge/
-    └── failure-log/
-```
-
-## Key constraints
-
-| Constraint | Requirement |
-|------------|-------------|
-| State file format | Valid JSON |
-| Reviewer isolation | Read-only (no Write/Edit) |
-| Review output location | `.arc/state/review-*.json` |
-| Stage update | Always update last_updated |
-
-## Usage
-
-### Check status
-```
-/paper:status
-```
-Reads `pipeline-status.json` and all `review-*.json` files.
-
-### Resume after interruption
-```
-/paper:resume
-```
-Reads state, identifies resume point, continues.
-
-### Reset state
-```
-/paper:reset [stage-name|all]
-```
-Clears state files and resets to start.
-
-## See also
-- arc-pipeline for stage definitions
-- `.claude/agents/` for reviewer subagent specifications
+- 状态文件是系统“事实层”，所有门控判断应优先依赖它。
+- 对状态的任何写入都必须可追踪、可复核。

@@ -1,122 +1,104 @@
 ---
 name: arc-research
-description: Research phase skills for topic initialization, literature search, knowledge synthesis, and hypothesis generation. Use when defining research direction, collecting references, or generating hypotheses.
+description: Runs literature-centered research workflow from topic framing through synthesis and hypothesis grounding. Use when collecting evidence-backed references, filtering noisy sources, and producing structured context for idea validation and experiment design.
 ---
 
-# Arc Research Skills
+# Arc Research
 
-## Quick reference
-- Topic must be a SMART goal with falsifiable claim
-- Literature collection requires DOI/arXiv verification (no hallucinations)
-- Minimum 50 verified candidates for literature collection
-- Minimum 15 papers in final shortlist
+## Purpose
 
-## Stages
+`arc-research` 将“想法”转为“有文献支撑的研究问题”。
 
-### Stage 1: Topic Init (arc-01-01)
-Transform idea into SMART goal:
-- Topic: single sentence (< 100 words)
-- Scope: defined (inclusions/exclusions)
-- Falsifiable claim with metric and direction
-- Hardware profile detection
+目标：
+- 建立系统化检索与筛选流程
+- 形成可追溯知识提取结果
+- 为 hypothesis 与实验设计提供依据
 
-**Output**: `goal.md`, `hardware_profile.json`
+## Inputs
 
-### Stage 2: Problem Decompose (arc-01-02)
-Break goal into ≥3 prioritized sub-questions:
-- Each SQ has `Question:` and `Testability:`
-- P0 = core claim, P1 = preconditions, P2 = ablations
-- Dependencies between SQs
+- `.arc/state/idea.json`
+- 用户给定主题/关键字
+- 已有参考文献库（若存在）
+- `.arc/env.json` 中 API 状态（Semantic Scholar / arXiv）
 
-**Output**: `problem_tree.md`
+## Outputs
 
-### Stage 3: Search Strategy (arc-02-01)
-Build search plan with verified sources:
-- ≥2 verified accessible data sources
-- ≥5 unique queries (≤60 chars each)
-- Each sub-question covered by ≥1 query
+- 文献候选集合（可导入 `references.bib`）
+- 结构化知识摘要（问题、方法、数据、结果、局限）
+- `.arc/state/review-literature.json` 的审查输入材料
 
-**Output**: `search_plan.yaml`, `sources.json`, `queries.json`
+## Workflow
 
-### Stage 4: Literature Collect (arc-02-02) — BLOCKING
-Retrieve ≥50 verified candidate papers:
-- Every DOI must resolve via doi.org
-- Every arXiv ID must exist via arxiv.org
-- ≥2 data sources represented
-- Hallucinated references BLOCK pipeline
+1. Topic initialization
+   - 明确研究问题与边界条件。
+   - 生成核心关键词与同义扩展词。
 
-**Output**: `candidates.jsonl`, `verification_report.json`
+2. Search strategy
+   - 首选 Semantic Scholar + arXiv 查询。
+   - API 缺失时记录 degraded 状态并显式提示。
 
-### Stage 5: Literature Screen (arc-02-03) — GATE
-Filter to ≥15 high-quality papers:
-- Each paper: relevance_score + quality_score
-- Pass threshold: relevance ≥ 0.5 AND quality ≥ 0.4
-- Documented in `screening_report.md`
+3. Collection
+   - 收集候选论文并保留来源元信息。
+   - 去重并剔除明显无关结果。
 
-**Output**: `shortlist.jsonl`, `screening_report.md`
+4. Screening
+   - 按相关性、质量、时间窗口筛选。
+   - 保留可验证元信息（title/author/year/venue/identifier）。
 
-### Stage 6: Knowledge Extract (arc-02-04)
-Extract structured knowledge cards:
-- One card per shortlisted paper
-- Fields: core_contribution, method, key_results, limitations
-- Cards index with paper IDs
+5. Knowledge extraction
+   - 提取每篇的核心贡献、实验设置、关键结果、局限性。
+   - 标注与当前 idea 的关联程度。
 
-**Output**: `cards/{paper_id}.json`, `cards_index.json`
+6. Synthesis
+   - 输出领域现状、空白点、冲突证据。
+   - 给出可检验 hypothesis 候选。
 
-### Stage 7: Synthesis (arc-03-01)
-Cluster papers and identify gaps:
-- ≥2 thematic clusters with shared-method rationale
-- ≥2 research gaps with evidence from cards
-- Gap: what is missing, why it matters, supporting papers
+## Quality constraints
 
-**Output**: `synthesis.md`, `gap_analysis.json`
+- 不接受无法验证存在性的文献作为核心依据。
+- 文献筛选必须保留可复核路径（查询词、筛选条件）。
+- 输出必须能被 `arc-citation-style` 四层验证消费。
 
-### Stage 7.5: Novelty Gap Gate (arc-03-03) — BLOCKING
-Validate novelty of identified gaps:
-- Multi-dimensional novelty assessment
-- Codex MCP REQUIRED for adversarial review
-- Gap must be genuinely novel vs prior work
+## Blocking conditions
 
-**Output**: `novelty_gap_report.json`
+- 核心主题缺乏足够文献支撑
+- 大量候选缺少可验证标识（DOI/arXiv）
+- 综述结论与证据不一致
 
-### Stage 8: Hypothesis Gen (arc-03-02)
-Generate ≥2 falsifiable hypotheses:
-- Each: grounded gap citation, quantitative prediction, falsification condition
-- Named primary metric with success threshold
-- Testable within resource budget
+## Integration points
 
-**Output**: `hypotheses.md`, `hypothesis_index.json`
+- 与 `arc-idea-exploration`：用于 novelty 对比和反重复。
+- 与 `arc-citation-style`：提供可验证引用候选。
+- 与 `arc-analysis`：为后续 claim-evidence 映射提供文献证据链。
 
-### Stage 0.7: Idea Exploration (arc-00-07) — Optional
-Generate and rank ≥5 candidate ideas:
-- Exploration before specific topic commitment
-- Select top-ranked for Stage 1
+## Suggested data structure
 
-**Output**: `ideas.json`, `selected_idea.md`
+推荐保存中间产物字段：
+- query
+- source
+- title
+- authors
+- year
+- venue
+- doi_or_arxiv
+- relevance_score
+- notes
 
-### Stage 8.5: Risk Assessment (arc-03-04) — Optional
-Evaluate execution/theoretical/competitive risks:
-- Classify each hypothesis: low/medium/high risk
-- All high risk → rollback to Stage 8
+## Failure handling
 
-**Output**: `risk_assessment.json`
+- API 不可用：标记 degraded，并继续最低可行检索。
+- 关键字段缺失：在输出中保留缺陷标记，不静默丢弃。
 
-## Key constraints
+## Review handoff
 
-| Stage | Constraint |
-|-------|------------|
-| 4 | DOI verification is BLOCKING — no hallucinations |
-| 5 | ≥15 papers required |
-| 7.5 | Codex MCP required — no fallback |
-| 8 | ≥2 hypotheses with quantitative predictions |
+文献阶段完成后，需可支持 reviewer 输出：
+- novelty 是否足够
+- related work 是否全面
+- 是否存在遗漏关键先行工作
 
-## Usage
+## Minimal acceptance criteria
 
-Use these skills in sequence for the research phase:
-1. `/paper:run --idea "research question"` to start
-2. Pipeline automatically advances through research stages
-3. Manual approval required at Stage 5 (literature screen gate)
-
-## See also
-- arc-pipeline for orchestration context
-- arc-state-management for state file formats
+- 有结构化候选文献集
+- 有筛选依据
+- 有可验证标识字段
+- 有可直接进入写作与引用循环的结果

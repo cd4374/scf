@@ -1,38 +1,36 @@
 ---
 name: paper-status
-description: Display current pipeline status and any blocking issues
+description: Display current pipeline status and blocking issues
 usage: /paper:status
 ---
 
-Display current pipeline status and any blocking issues.
+Read:
+- `.arc/state/pipeline-status.json`
+- `.arc/state/review-*.json`
+- `.arc/env.json`
 
-Read `.arc/state/pipeline-status.json` and all `review-*.json` files.
-Output a concise table showing:
-- Current stage and completion percentage
-- Pass/fail status of each completed review
-- Any blocking issues that must be resolved
-- Word count vs target (from pipeline-status.json)
-- Figure count vs minimum required
+Output must include:
+- Stage / word count / figure count / citation status
+- Blocking issues summary
+- Environment block
 
-Example output:
+Required format example:
+
+```text
+Pipeline Status
+═══════════════════════════════════════
+Stage:        writing (round 2/4)
+Word count:   4,823 / 6,000 ⚠
+Figures:      3 / 4 ⚠
+Citations:    18 / 20 ⚠ (2 hallucinated, removed)
+
+Environment
+═══════════════════════════════════════
+Compute:      ssh -> gpu-server-1
+Conda env:    scf-myproject ✓ (Python 3.10)
+Validated:    2025-04-08 14:23 ✓
+Active exp:   scf-exp-20250408-1423 (running 1h23m)
+APIs:         semantic_scholar ✓  arxiv ✓  codex ⚠(degraded)  wandb —
 ```
-=== Pipeline Status ===
 
-Stage: writing (75%)
-Journal: neurips
-
-Reviews:
-  idea-validator:     PASS ✓
-  literature-reviewer: PASS ✓
-  logic-checker:       PASS ✓
-  stat-auditor:        PASS ✓
-  figure-auditor:      PASS ✓
-  final-reviewer:      PENDING ○
-
-Quality:
-  Word count: 5234 / 6000 (need 766 more)
-  Figure count: 5 / 4 ✓
-  LaTeX compile: PASS ✓
-
-Blocking issues: none
-```
+If any blocking issue exists, list top blocking items first.

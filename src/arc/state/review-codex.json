@@ -1,0 +1,18 @@
+{
+  "agent": "codex-review",
+  "timestamp": "",
+  "pass": false,
+  "score": 0,
+  "decision": "major",
+  "cross_model": "degraded",
+  "issues": [
+    {
+      "location": "",
+      "type": "gap",
+      "description": "not run yet",
+      "severity": "blocking"
+    }
+  ],
+  "strengths": [],
+  "summary": "not run yet"
+}

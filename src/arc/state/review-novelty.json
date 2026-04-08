@@ -1,0 +1,18 @@
+{
+  "agent": "novelty-checker",
+  "timestamp": "",
+  "pass": false,
+  "score": 0,
+  "decision": "fail",
+  "api_source": "semantic_scholar",
+  "issues": [
+    {
+      "location": "",
+      "type": "novelty_insufficient",
+      "description": "not run yet",
+      "severity": "blocking"
+    }
+  ],
+  "strengths": [],
+  "summary": "not run yet"
+}

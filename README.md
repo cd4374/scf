@@ -1,64 +1,71 @@
 # scf Paper Framework
 
-自动化生成高质量、可验证、可重复的学术论文框架。
+scf（Scientific Paper Framework）用于把研究 idea 推进为高质量、可验证、可复现的论文工程。
 
-## 快速开始
+## 验收口径
+
+项目实现以 `PROJECT_SPEC.md` 为唯一核查标准。建议每轮迭代后执行逐章 PASS/FAIL/PARTIAL 核查。
+
+## 快速安装
 
 ```bash
-# 1. 安装到你的论文项目目录
+/path/to/scf/install.sh \
+  --target /path/to/your-paper-project \
+  --journal neurips \
+  --project-name myproject
+```
+
+支持参数：
+- `--target`
+- `--journal`
+- `--max-review-rounds`
+- `--skip-env-probe`
+- `--ssh-host`
+- `--project-name`
+
+## 完整运行示例
+
+```bash
 cd /path/to/your-paper-project
-/path/to/scf/install.sh --journal neurips
-
-# 2. 在 Claude Code 中运行
-/paper:run --idea "你的研究问题" --journal neurips
+claude
+/paper:status
+/paper:run --idea "A robust low-resource reasoning method" --journal neurips --max-review-rounds 4
 ```
 
-## 命令
+`/paper:run` 在开始前会读取 `.arc/env.json` 并断言 `compute.validated == true`。
 
-| 命令 | 说明 |
-|------|------|
-| `/paper:run` | 启动/继续论文生成流程 |
-| `/paper:status` | 查看当前状态和阻塞问题 |
-| `/paper:resume` | 从中断处继续 |
-| `/paper:review [类型]` | 触发审查 (idea/literature/logic/stat/figures/final) |
-| `/paper:reset [阶段]` | 重置指定阶段或全部状态 |
-| `/paper:export` | 打包最终论文 |
+## Auto-loop 命令
 
-## 工作流程
+- `/paper:idea-loop`（MAX_ITER=3）
+- `/paper:review-loop`（MAX_ITER=4）
+- `/paper:figure-loop`（MAX_ITER=5）
+- `/paper:citation-loop`（MAX_ITER=3）
 
-```
-idea-validation → literature-review → synthesis → experiment-design
-    → experiment-run → result-analysis → writing → peer-review
-    → final-review → export
-```
+终止与保护：
+- 达到阈值提前终止；
+- 达到 MAX_ITER 强制停止；
+- review-loop 连续两轮分数下降时进入 `human-intervention-needed`。
 
-## 质量门槛
+## 环境配置（v4）
 
-- 正文 ≥ 6000 词
-- 必须章节: Abstract, Introduction, Related Work, Method, Experiments, Conclusion
-- 图表 ≥ 4 张，每张必须有对应文件
-- 所有引用必须在 references.bib 中完整
-- LaTeX 必须编译成功
+- 环境唯一真相：`.arc/env.json`
+- 安装默认执行环境探测并生成 `.arc/env.json`
+- `--skip-env-probe` 会复制模板，需手动填写后再验证
 
-## 审查机制
-
-6 个独立的审查 subagent（只读，不修改论文）：
-
-- `idea-validator` — 研究想法可行性
-- `literature-reviewer` — 文献覆盖度
-- `logic-checker` — 逻辑一致性
-- `stat-auditor` — 统计方法审计
-- `figure-auditor` — 图表质量
-- `final-reviewer` — 综合验收
-
-## 卸载
+全量环境校验：
 
 ```bash
-/path/to/scf/uninstall.sh
+/path/to/scf/validate.sh --target /path/to/your-paper-project --full-env-check
 ```
 
 ## 验证
 
 ```bash
-./validate.sh
+/path/to/scf/validate.sh --target /path/to/your-paper-project
+```
+
+## 卸载
+
+```bash
+/path/to/scf/uninstall.sh --target /path/to/your-paper-project
 ```

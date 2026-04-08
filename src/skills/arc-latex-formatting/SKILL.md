@@ -1,146 +1,67 @@
 ---
 name: arc-latex-formatting
-description: LaTeX formatting skills including template resolution, compilation, and submission format compliance. Use when resolving venue templates, compiling papers, or verifying LaTeX correctness.
+description: Enforces venue-compatible LaTeX structure, figure/citation wiring, and compile correctness for final submission artifacts. Use when preparing templates, validating TeX integrity, and ensuring export-ready PDF generation.
 ---
 
-# Arc LaTeX Formatting Skills
+# Arc LaTeX Formatting
 
-## Quick reference
-- LaTeX MUST compile locally — no cloud/Overleaf fallbacks
-- Compile sequence: pdflatex → bibtex → pdflatex → pdflatex
-- Exit code 0 required before any stage advances
-- Templates available: neurips, iclr, icml, aaai, ieee, elsevier, springer, acl
+## Purpose
 
-## Templates
+确保论文源文件满足目标期刊/会议模板约束，并能稳定完成本地编译链。
 
-Templates are located in `templates/` directory:
+## Inputs
 
-```
-templates/
-├── neurips/       # neurips_2026.sty, template.tex
-├── iclr/         # template.tex
-├── icml/         # icml2026.sty, template.tex
-├── aaai/         # template.tex
-├── ieee/         # template_journal.tex, template_conference.tex
-├── elsevier/     # template.tex
-├── springer/     # template.tex
-├── acl/          # template.tex
-└── cvpr/         # template.tex
-```
+- `draft.tex`
+- `references.bib`
+- 图表文件目录（如 `figures/` 或 `.arc/figures/rendered/`）
+- 目标模板（`src/skills/arc-latex-formatting/templates/*`）
 
-## Template resolution
+## Compile chain (authoritative)
 
-Resolved by `arc-07-00-template-resolve` into `template_manifest.json`:
+`pdflatex -> bibtex -> pdflatex -> pdflatex`
 
-| Template family | Template ID | Type |
-|----------------|-------------|------|
-| neurips | neurips_2026 | conference |
-| iclr | iclr_2026 | conference |
-| icml | icml_2026 | conference |
-| aaai | aaai_2026 | conference |
-| acl_family | acl_2025, emnlp_2025 | conference |
-| cv_family | cvpr_2026, iccv_2025 | conference |
-| ieee_conf | ieee_conference | conference |
-| ieee_journal | ieeetran_journal | journal |
-| elsevier_journal | elsevier_cas_sc, pattern_recognition | journal |
-| springer_journal | springer_lncs_journal | journal |
+要求：
+- 编译命令 exit code 必须为 0
+- 生成 PDF 必须非空
 
-## Compilation
+## Formatting checks
 
-### Standard sequence
-```bash
-pdflatex -interaction=nonstopmode draft.tex
-bibtex draft
-pdflatex -interaction=nonstopmode draft.tex
-pdflatex -interaction=nonstopmode draft.tex
-```
+1. 章节结构完整性（6 个必要章节）
+2. 图表引用完整性：`\includegraphics{}` 对应实体文件
+3. 参考文献引用完整性：`\cite{}` 与 bib key 一致
+4. 模板兼容性：文档类、宏包与目标 venue 匹配
+5. 禁止明显占位文本残留（TODO/TBD）
 
-### Verify success
-- Exit code 0 on all commands
-- PDF file exists and non-empty
-- No `! ` errors in log
+## Integration with hooks
 
-### Error handling
-- Parse log for `! ` errors
-- Common issues: missing `\bibliography{references}`, undefined citations, missing packages
-- Fix and recompile before proceeding
+- `post-write-latex-check.sh` 提供写后快速反馈。
+- `paper-export` 阶段执行完整编译链作为最终门控。
 
-## Required LaTeX elements
+## Failure policy
 
-### Document structure
-```latex
-\documentclass[options]{documentclass}
-\usepackage[...]{packages}
-\bibliography{references}  % BibTeX file
-\begin{document}
-\title{...}
-\begin{abstract}...\end{abstract}
-\maketitle
-\section{Introduction}
-...
-\bibliography{references}
-\end{document}
-```
+- 编译失败 -> blocking issue
+- 图表路径失效 -> blocking issue
+- bib key 失配 -> major/blocking（视覆盖范围）
 
-### Bibliography style commands
-| Venue | Commands |
-|-------|----------|
-| neurips/iclr/icml | `\citep{}`, `\citet{}` |
-| IEEE | `\cite{}` |
-| General | `\bibliographystyle{plainnat}` |
+## Output expectations
 
-## Figure handling
+- 修复建议（按优先级）
+- 可复现编译步骤
+- 对应 issue 定位（章节/行附近）
 
-- Figures in `.arc/figures/rendered/`
-- Include with `\includegraphics[width=...]{figures/rendered/fig}`
-- Captions with `\caption{...}`
-- References with `\label{fig:name}` → `\ref{fig:name}`
+## Template handling
 
-## Section requirements by venue
+- 选择模板时保持最小改动原则，不破坏已有内容语义。
+- 特定 venue 样式改动需可回滚且可追踪。
 
-### Conference (NeurIPS/ICLR/ICML)
-- Abstract (180-220 words)
-- Introduction (with contributions list)
-- Related Work
-- Method
-- Experiments
-- Conclusion
-- Broader Impact / Ethics Statement
+## Handoff criteria
 
-### Journal (IEEE/Elsevier/Springer)
-- Abstract
-- Introduction
-- Related Work
-- Method
-- Experiments
-- Results
-- Discussion
-- Conclusion
-- (Appendix optional)
+进入 `paper-export` 前应满足：
+- [ ] LaTeX 全链编译通过
+- [ ] PDF 非空
+- [ ] 图表/引用链接完整
+- [ ] 结构与模板规范一致
 
-## Key constraints
+## Notes
 
-| Constraint | Requirement |
-|------------|-------------|
-| Compilation | Exit code 0 required |
-| Citations | All must exist in references.bib |
-| Figures | All must exist as files |
-| References | Complete fields (author, title, year) |
-
-## Submission format gates
-
-- Stage 28: Submission format gate checks
-- Stage 28.5: Final acceptance gate
-- Both require LaTeX compilation success
-
-## Usage
-
-1. Template resolve sets venue contract
-2. Paper draft uses template structure
-3. Export (Stage 22) compiles to PDF
-4. Submission gates verify format compliance
-
-## See also
-- arc-writing for paper creation context
-- arc-experiment for figure generation
-- templates/ directory for actual template files
+- 本 skill 关注“格式与可编译性”，不替代统计/引用真实性审查。

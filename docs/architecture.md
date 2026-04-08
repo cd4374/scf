@@ -1,175 +1,73 @@
-# ARC-Harness Architecture Document
+# SCF Architecture (v4)
 
-This file preserves the original CLAUDE.md content for historical reference after the v2.0 refactor.
+## Design goals
+- Treat `.arc/env.json` as the single source of truth for runtime environment.
+- Keep `src/CLAUDE.md` minimal (instruction-only, no expanded environment details).
+- Make quality gates explicit and consistent across commands, hooks, agents, and docs.
+- Ensure loops are bounded and auditable through state/log files.
 
-## Project Objective (Core Alignment Point)
+## Core architecture
 
-When the full chain succeeds, it MUST yield a **high-quality, verifiable, reproducible, authentic academic paper** with at minimum:
+### 1) Environment single-source-of-truth
+Environment data lives in one place only:
+- Runtime file: `.arc/env.json` (gitignored)
+- Template: `src/arc/env.template.json`
+- Producer: `src/arc/env-probe.sh`
+- Validator: `src/arc/env-validate.sh`
 
-1. **Real LaTeX sources** — locally compiled, not generated/placeholder
-2. **Locally compiled PDF** — via `pdflatex` + `bibtex`, exit code 0
-3. **Verified references** — every citation has resolvable DOI or arXiv ID
-4. **Real experiment-backed claims** — all quantitative claims traceable to actual execution
-5. **Submission-format compliance** — meets target venue specifications
+Consumers:
+- Hooks (`stop-gate.sh`) read env fields for final safety checks.
+- Skills/commands (especially experiment path) read env fields before execution.
 
-**This is the non-negotiable target. All skills, gates, and workflows must align to this.**
+`src/CLAUDE.md` only keeps one pointer line:
+- `Compute environment: read .arc/env.json before any experiment task.`
 
----
+### 2) State bus
+Cross-agent communication uses `.arc/state/*.json`.
+- Pipeline summary: `pipeline-status.json`
+- Review outputs: `review-*.json`
+- Reproducibility record: `reproducibility.json`
 
-## Hard Constraints (Red Lines)
+Loop and progress telemetry:
+- `.arc/loop-logs/review-rounds/`
+- `.arc/loop-logs/figure-rounds/`
+- `.arc/loop-logs/citation-rounds/`
 
-### 1. Environment Blocking (Stage 0)
+### 3) Command/agent/skill separation
+- Commands orchestrate workflow (`/paper:*`).
+- Skills define reusable protocols and contracts.
+- Agents perform specialist review tasks (read-only reviewers).
+- Hooks enforce hard constraints after/before writes and at stop.
 
-Missing critical capabilities **BLOCK** the pipeline:
-- **Execution backend** → Required for Stages 10-13
-- **Local LaTeX** → Required for Stages 22, 28 (NO cloud/Overleaf fallback)
-- **Network** → Required for Stages 3-4 (DOI/arXiv verification)
+## Auto-loop contracts
+Default caps (must stay consistent):
+- `idea_loop MAX_ITER=3`
+- `review_loop MAX_ITER=4`
+- `figure_loop MAX_ITER=5`
+- `citation_loop MAX_ITER=3`
 
-### 2. Anti-Hallucination Guarantees
+Stop conditions:
+- reach threshold,
+- hit max iterations,
+- review score declines for two consecutive rounds (pause for human intervention).
 
-| Guarantee | Implementation |
-|-----------|---------------|
-| No fake citations | Stage 4 verifies every DOI/arXiv before accepting |
-| No fake experiments | Stage 12 executes real code with anti-fabrication checks |
-| No fake PDF | Stage 22 local compilation only, exit code 0 required |
-| No self-review | Stage 7.5 and 24 require external Codex MCP review |
+## Quality gates (authoritative values)
+These values must be consistent across `src/CLAUDE.md`, hooks, reviewer logic, and docs:
+- Body word count: **>= 6000** (excluding references)
+- Required sections: **6** (`Abstract`, `Introduction`, `Related Work`, `Method`, `Experiments`, `Conclusion`)
+- Figure count: **>= 4**, each with real file (300 DPI+)
+- Citation policy: **>= 20** references, **>= 60%** from last 5 years
+- Citation integrity: four-layer verification; hallucinated entries must be removed
+- LaTeX: compile without errors
+- Experimental numbers: must come from real runs (no fabrication)
 
-### 3. External Review Requirement (CRITICAL)
+## Hook responsibilities
+- `pre-write-gate.sh`: block reviewer agents from writing `draft.tex`.
+- `post-write-*`: update/check word count, sections, figures, citations, latex, AI writing patterns, loop logs.
+- `stop-gate.sh`: final guard that checks final review pass, minimum word count, and env validation status.
 
-**Stage 7.5 (NOVELTY_GAP_GATE)** and **Stage 24 (PAPER_REVIEW_LOOP)** require **Codex MCP**.
-
-- If unavailable: Fail with `E07B_CODEX_MCP_REQUIRED` or `E24_CODEX_MCP_REQUIRED`
-- **NO FALLBACK**: Degraded local review is NOT permitted
-- See `arc-03-03-novelty-gap-gate/SKILL.md` and `arc-09-01-paper-review-loop/SKILL.md` for setup
-
-### 4. Global Iteration Cap
-
-**MAX_GLOBAL_ITERATIONS = 50**
-
-Calculated as: `pivot_count + review_rounds`
-
-On cap reached: Pipeline fails with `E_GLOBAL_ITERATION_CAP`
-
----
-
-## Stage Chain (Authoritative)
-
-| Stage | Skill ID | Name | sub_step | Type |
-|-------|----------|------|----------|------|
-| 0 | arc-00-04 | ENVIRONMENT_PROBE | — | BLOCKING |
-| 0 | arc-00-07 | IDEA_EXPLORATION | idea_exploration | optional |
-| 1 | arc-01-01 | TOPIC_INIT | — | normal |
-| 2 | arc-01-02 | PROBLEM_DECOMPOSE | — | normal |
-| 3 | arc-02-01 | SEARCH_STRATEGY | — | normal |
-| 4 | arc-02-02 | LITERATURE_COLLECT | — | BLOCKING |
-| 5 | arc-02-03 | LITERATURE_SCREEN | — | GATE |
-| 6 | arc-02-04 | KNOWLEDGE_EXTRACT | — | normal |
-| 7 | arc-03-01 | SYNTHESIS | — | normal |
-| 7 | arc-03-03 | NOVELTY_GAP_GATE | novelty_gap_gate | GATE (blocking) |
-| 8 | arc-03-02 | HYPOTHESIS_GEN | — | normal |
-| 8 | arc-03-04 | RISK_ASSESSMENT | risk_assessment | optional |
-| 9 | arc-04-01 | EXPERIMENT_DESIGN | — | GATE |
-| 9 | arc-04-04 | REPRODUCIBILITY_DESIGN_GATE | reproducibility_gate | GATE (blocking) |
-| 10 | arc-04-02 | CODE_GENERATION | — | normal |
-| 11 | arc-04-03 | RESOURCE_PLANNING | — | normal |
-| 12 | arc-05-01 | EXPERIMENT_RUN | — | normal |
-| 13 | arc-05-02 | ITERATIVE_REFINE | — | normal |
-| 14 | arc-06-01 | RESULT_ANALYSIS | — | normal |
-| 15 | arc-06-02 | RESEARCH_DECISION | — | normal |
-| 15 | arc-06-03 | RESULT_CLAIM_GATE | claim_gate | GATE (blocking) |
-| 15 | arc-07-00 | TEMPLATE_RESOLVE | template_resolve | normal |
-| 16 | arc-07-01 | PAPER_OUTLINE | — | normal |
-| 17 | arc-07-02 | PAPER_DRAFT | — | normal |
-| 17 | arc-07-05 | WRITING_COMPLIANCE_GATE | writing_compliance_gate | GATE (blocking) |
-| 18 | arc-07-03 | PEER_REVIEW | — | normal |
-| 18 | arc-08-05 | BIBLIOGRAPHY_QUALITY_GATE | bibliography_gate | GATE (blocking) |
-| 19 | arc-07-04 | PAPER_REVISION | — | normal |
-| 20 | arc-08-01 | QUALITY_GATE | — | GATE |
-| 20 | arc-00-06 | META_OPTIMIZER | meta_optimizer | blocking |
-| 21 | arc-08-02 | KNOWLEDGE_ARCHIVE | — | optional |
-| 21 | arc-08-06 | REPRODUCIBILITY_BUNDLE_GATE | reproducibility_bundle_gate | GATE (blocking) |
-| 22 | arc-08-03 | EXPORT_PUBLISH | — | normal |
-| 23 | arc-08-04 | CITATION_VERIFY | — | normal |
-| 24 | arc-09-01 | PAPER_REVIEW_LOOP | — | BLOCKING |
-| 24 | arc-09-03 | ACADEMIC_INTEGRITY_GATE | academic_integrity_gate | GATE (blocking) |
-| 25 | arc-09-02 | PAPER_POLISH | — | normal |
-| 26 | arc-10-04 | NUMERIC_TRUTH_GATE | numeric_truth_gate | GATE (blocking) |
-| 26 | arc-10-01 | CLAIM_EVIDENCE_TRACE_GATE | claim_evidence_gate | GATE (blocking) |
-| 27 | arc-10-02 | FIGURE_QUALITY_GATE | — | GATE (blocking) |
-| 28 | arc-10-03 | SUBMISSION_FORMAT_GATE | — | GATE (blocking) |
-| 28 | arc-10-05 | FINAL_ACCEPTANCE_GATE | final_acceptance_gate | GATE (blocking) |
-
----
-
-## Rollback Targets
-
-| Failed Stage | Rollback To |
-|--------------|-------------|
-| 5 | 4 |
-| 7 (novelty_gap_gate) | 7 |
-| 9 | 8 |
-| 9 (reproducibility_gate) | 9 |
-| 15 (claim_gate) | 15 |
-| 17 (writing_compliance_gate) | 17 |
-| 18 (bibliography_gate) | 17 |
-| 20 | 16 |
-| 21 (reproducibility_bundle_gate) | 20 |
-| 24 (academic_integrity_gate) | 24 |
-| 26 (numeric_truth_gate) | 19 |
-| 26 (claim_evidence_gate) | 19 |
-| 27 | 22 (invalidate 23-25) |
-| 28 | 22 (invalidate 23-25) |
-| 28 (final_acceptance_gate) | 28 |
-
----
-
-## Hard Paper Standards (from paper_standards.md)
-
-### Blocking Requirements
-
-| Standard | Minimum | Enforced At |
-|----------|---------|-------------|
-| LaTeX Compilation | exit code 0 | Stage 22 |
-| PDF Generation | Non-empty PDF | Stage 22 |
-| Citation Count | ≥30 verified | Stage 23 |
-| Reference Recency | AI/ML ≥30%, Physics ≥20% (last 5 years) | Stage 23 |
-| Figure Count | AI/ML ≥5, Physics ≥4, Simulation ≥3 | Stage 27 |
-| Numeric Truth | Claims match experiment data | Stage 26 |
-
----
-
-## Success Criteria
-
-A run is **SUCCESSFUL** if and only if:
-
-1. ✅ Stage 0 passes (environment capable)
-2. ✅ Stage 4 passes (≥50 verified candidates, no hallucinations)
-3. ✅ Stage 7 (novelty_gap_gate) passes (Codex MCP confirms novelty)
-4. ✅ Stage 12 completes (real experiments executed)
-5. ✅ Stage 22 produces valid PDF (exit code 0)
-6. ✅ Stage 23 verifies ≥30 citations
-7. ✅ Stage 24 completes (Codex MCP external review)
-8. ✅ Stage 26 (numeric_truth_gate) validates numeric claims
-9. ✅ Stage 26 (claim_evidence_gate) approves claim-evidence traceability
-10. ✅ Stage 27 approves figure quality
-11. ✅ Stage 28 approves submission format
-12. ✅ Stage 28 (final_acceptance_gate) grants final acceptance
-
-**Missing any = FAILURE**
-
----
-
-## Documentation Authority
-
-This file is the **single normative protocol source** for ARC stage/gate standards.
-
-- `README.md` is for operator onboarding and run instructions only.
-- If `README.md` conflicts with this file, this file wins.
-- Do not duplicate full gate/error/stage tables in README.
-
----
-
-## Version
-
-- v5.1: Simplified — removed redundant state/retry details (see harness.py), added Codex MCP section
-- v2.0: Refactored to Claude Code native framework — see refactor-instru.md for details
+## Why v4 changed from old design
+Older design embedded environment details in CLAUDE markdown fragments. That caused drift and parsing fragility. v4 fixes this by:
+- centralizing environment config in `.arc/env.json`,
+- using structured readers (hooks/scripts/skills) instead of markdown parsing,
+- avoiding sensitive environment expansion in versioned instruction files.

@@ -1,22 +1,31 @@
 #!/usr/bin/env bash
-# pre-write-gate.sh — PreToolUse hook
-# Blocks reviewer agents from writing to draft.tex
-
+set -euo pipefail
 INPUT=$(cat)
-FILE=$(echo "$INPUT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('tool_input',{}).get('file_path',''))" 2>/dev/null || echo "")
-
-if [[ "$FILE" == *"draft.tex" ]]; then
-    AGENT=$(python3 -c "
-import json, os
+if command -v jq >/dev/null 2>&1; then
+  FILE=$(jq -r '.tool_input.file_path // ""' <<<"$INPUT" 2>/dev/null || true)
+else
+  FILE=$(python3 -c 'import json,sys; print(json.load(sys.stdin).get("tool_input",{}).get("file_path",""))' <<<"$INPUT" 2>/dev/null || true)
+fi
+[[ "$FILE" != *"draft.tex" ]] && exit 0
+STATE="$CLAUDE_PROJECT_DIR/.arc/state/pipeline-status.json"
+AGENT=""
+if [ -f "$STATE" ]; then
+  if command -v jq >/dev/null 2>&1; then
+    AGENT=$(jq -r '.active_agent // ""' "$STATE" 2>/dev/null || true)
+  else
+    AGENT=$(python3 - <<'PY' "$STATE"
+import json,sys
 try:
-    s = json.load(open(os.environ['CLAUDE_PROJECT_DIR']+'/.arc/state/pipeline-status.json'))
-    print(s.get('active_agent',''))
-except: print('')
-" 2>/dev/null)
-    REVIEWER_AGENTS="idea-validator literature-reviewer logic-checker stat-auditor figure-auditor final-reviewer"
-    if echo "$REVIEWER_AGENTS" | grep -qw "$AGENT"; then
-        echo '{"decision":"block","reason":"Reviewer agents cannot write to draft.tex. Write review output to .arc/state/review-*.json instead."}'
-        exit 2
-    fi
+    print(json.load(open(sys.argv[1])).get('active_agent',''))
+except Exception:
+    print('')
+PY
+)
+  fi
+fi
+REVIEWER_AGENTS="idea-validator novelty-checker literature-reviewer logic-checker stat-auditor figure-auditor citation-verifier peer-reviewer-1 peer-reviewer-2 devils-advocate multi-agent-debate final-reviewer"
+if echo "$REVIEWER_AGENTS" | grep -qw "$AGENT"; then
+  echo '{"decision":"block","reason":"Reviewer agents cannot write draft.tex; write review output to .arc/state/review-*.json"}'
+  exit 2
 fi
 exit 0

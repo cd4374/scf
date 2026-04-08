@@ -2,5 +2,7 @@
   "research_question": "",
   "keywords": [],
   "target_journal": "",
-  "created_at": ""
+  "created_at": "",
+  "novelty_score": 0,
+  "diversity_dimensions": []
 }

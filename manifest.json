@@ -1,16 +1,32 @@
 {
-  "version": "2.0.0",
+  "version": "2.1.0",
   "components": [
-    { "src": "src/CLAUDE.md",              "dest": "CLAUDE.md",                    "action": "template" },
-    { "src": "src/claude-settings.json",   "dest": ".claude/settings.json",        "action": "copy" },
-    { "src": "src/commands/",              "dest": ".claude/commands/",             "action": "copy-dir" },
-    { "src": "src/agents/",               "dest": ".claude/agents/",              "action": "copy-dir" },
-    { "src": "src/skills/",               "dest": ".claude/skills/",              "action": "copy-dir" },
-    { "src": "src/arc/",                  "dest": ".arc/",                        "action": "copy-dir" }
+    { "src": "README.md", "dest": "README.md", "action": "reference" },
+    { "src": "LICENSE", "dest": "LICENSE", "action": "reference" },
+    { "src": "install.sh", "dest": "install.sh", "action": "reference" },
+    { "src": "uninstall.sh", "dest": "uninstall.sh", "action": "reference" },
+    { "src": "validate.sh", "dest": "validate.sh", "action": "reference" },
+    { "src": "src/CLAUDE.md", "dest": "CLAUDE.md", "action": "template" },
+    { "src": "src/claude-settings.json", "dest": ".claude/settings.json", "action": "copy" },
+    { "src": "src/commands/", "dest": ".claude/commands/", "action": "copy-dir" },
+    { "src": "src/agents/", "dest": ".claude/agents/", "action": "copy-dir" },
+    { "src": "src/skills/", "dest": ".claude/skills/", "action": "copy-dir" },
+    { "src": "src/arc/hooks/", "dest": ".arc/hooks/", "action": "copy-dir" },
+    { "src": "src/arc/state/", "dest": ".arc/state/", "action": "copy-dir" },
+    { "src": "src/arc/memory/", "dest": ".arc/memory/", "action": "copy-dir" },
+    { "src": "src/arc/figures/", "dest": ".arc/figures/", "action": "copy-dir" },
+    { "src": "src/arc/loop-logs/", "dest": ".arc/loop-logs/", "action": "copy-dir" },
+    { "src": "src/arc/env.template.json", "dest": ".arc/env.template.json", "action": "copy" },
+    { "src": "src/arc/env-probe.sh", "dest": ".arc/env-probe.sh", "action": "copy" },
+    { "src": "src/arc/env-validate.sh", "dest": ".arc/env-validate.sh", "action": "copy" },
+    { "src": "src/arc/conda-setup.sh", "dest": ".arc/conda-setup.sh", "action": "copy" },
+    { "src": "docs/", "dest": "docs/", "action": "reference" },
+    { "src": "tests/fixtures/", "dest": "tests/fixtures/", "action": "reference" }
   ],
   "gitignore_additions": [
+    ".arc/env.json",
     ".arc/state/",
-    ".arc/figures/rendered/",
+    ".arc/loop-logs/",
     ".arc/memory/"
   ]
 }

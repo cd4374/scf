@@ -1,0 +1,6 @@
+{
+  "random_seeds": [42],
+  "datasets": [],
+  "environment_snapshot_path": ".arc/environment.yml",
+  "sanity_check_passed": false
+}

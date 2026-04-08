@@ -1,8 +1,17 @@
 {
-  "agent": "",
+  "agent": "literature-reviewer",
   "timestamp": "",
   "pass": false,
   "score": 0,
-  "issues": [],
+  "decision": "fail",
+  "issues": [
+    {
+      "location": "",
+      "type": "gap",
+      "description": "not run yet",
+      "severity": "blocking"
+    }
+  ],
+  "strengths": [],
   "summary": "not run yet"
 }

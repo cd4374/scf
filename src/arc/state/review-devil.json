@@ -1,0 +1,19 @@
+{
+  "agent": "devils-advocate",
+  "timestamp": "",
+  "pass": false,
+  "score": 0,
+  "decision": "major",
+  "attack_intensity": "high",
+  "premise_attacks": [],
+  "issues": [
+    {
+      "location": "",
+      "type": "premise_attack",
+      "description": "not run yet",
+      "severity": "blocking"
+    }
+  ],
+  "strengths": [],
+  "summary": "not run yet"
+}
