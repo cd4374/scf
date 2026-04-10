@@ -1,0 +1,21 @@
+{
+  "paper_format": "long",
+  "paper_domain": "numerical",
+  "target_venue": "JCP",
+  "page_limit": 12,
+  "derived_thresholds": {
+    "min_references": 30,
+    "min_recent_refs_pct": 20,
+    "min_figures": 3,
+    "min_tables": 1,
+    "require_ablation": true,
+    "min_experiment_runs": 1,
+    "abstract_max_words": 250,
+    "recent_years_cutoff": 5
+  },
+  "exemptions": {
+    "ablation_exempt": false,
+    "recent_refs_pct_exempt": false,
+    "recent_refs_pct_exempt_reason": ""
+  }
+}

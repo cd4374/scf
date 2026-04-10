@@ -8,21 +8,31 @@ Run the academic paper pipeline from current state.
 
 ## Parameters
 
-- `--idea`: 设置或覆盖研究问题，写入 `.arc/state/idea.json`
-- `--journal`: 设置目标期刊/会议
-- `--resume`: 从当前 stage 恢复
-- `--max-review-rounds`: 覆盖 review loop 默认轮次
+- `--idea`: Set or override research question, write to `.arc/state/idea.json`
+- `--journal`: Set target venue (deprecated; use `/paper:init` instead)
+- `--resume`: Resume from current stage
+- `--max-review-rounds`: Override review loop default rounds
 
 ## Preflight (mandatory)
 
-1. Read `.arc/env.json`.
-2. Assert `compute.validated == true`.
-3. If false: stop and ask user to run `validate.sh`.
-4. Read `.arc/state/pipeline-status.json` and current stage.
+1. Read `.arc/paper-type.json` — if missing, require `/paper:init` first.
+2. Read `.arc/env.json`.
+3. Assert `compute.validated == true`.
+4. If false: stop and ask user to run `validate.sh`.
+5. Read `.arc/state/pipeline-status.json` and current stage.
 
-## Stage sequence
+## Stage sequence (v5)
 
-not-started -> idea-exploration -> idea-validation -> literature-review -> synthesis -> hypothesis-generation -> experiment-design -> experiment-run -> result-analysis -> writing -> figure-generation -> citation-verification -> peer-review -> codex-review -> final-review -> export -> completed
+```
+not-started → paper-init → idea-exploration → idea-validation →
+literature-review → synthesis → hypothesis-generation →
+experiment-design → experiment-run → result-analysis →
+writing → figure-generation → citation-verification →
+integrity-check → stat-audit → peer-review → codex-review →
+final-review → export → completed
+```
+
+**v5 new stages**: `paper-init`, `integrity-check`, `stat-audit`
 
 ## Core flow
 

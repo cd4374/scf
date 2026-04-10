@@ -27,14 +27,15 @@
   - 若 active_agent 属于 reviewer 列表，阻断并输出 block JSON
 - 副作用：无
 
-### 2) `post-write-word-count.sh`
+### 2) `post-write-page-count.sh`
 - 事件：PostToolUse
 - matcher：`Write|Edit|MultiEdit`
 - 输入关键字段：`.tool_input.file_path`
 - 行为：
   - 仅对 `draft.tex` 生效
-  - 计算正文词数并写回 `.arc/state/pipeline-status.json`
-  - 更新：`word_count`、`word_count_ok`、`last_updated`
+  - 基于编译结果/状态统计页数并写回 `.arc/state/pipeline-status.json`
+  - 读取 `.arc/paper-type.json.page_limit` 进行页数门控（不足给警告，超限阻断）
+  - 更新：`page_count`、`last_updated`
 - 副作用：更新 pipeline state
 
 ### 3) `post-write-section-check.sh`
@@ -43,7 +44,8 @@
 - 输入关键字段：`.tool_input.file_path`
 - 行为：
   - 仅对 `draft.tex` 生效
-  - 检查必要章节：Abstract/Introduction/Related Work/Method/Experiments/Conclusion
+  - 检查必要章节：Abstract/Introduction/Method(or Theory)/Experiments(or Results)/Limitations/Conclusion/References
+  - 当 `require_ablation=true` 时额外检查 Ablation 章节
   - 缺失项写入 pipeline state 的阻断信息
 - 副作用：更新 pipeline state
 
@@ -57,7 +59,18 @@
   - 更新 `figure_count` 和图表相关阻断信息
 - 副作用：更新 pipeline state
 
-### 5) `post-write-citation-check.sh`
+### 5) `post-write-table-check.sh`
+- 事件：PostToolUse
+- matcher：`Write|Edit|MultiEdit`
+- 输入关键字段：`.tool_input.file_path`
+- 行为：
+  - 仅对 `draft.tex` 生效
+  - 从 `.arc/paper-type.json` 读取 `min_tables`
+  - 检查正文表格数量与结果对比表存在性
+  - 不达标给警告（不阻断）
+- 副作用：更新 pipeline state 中 `table_count`
+
+### 6) `post-write-citation-check.sh`
 - 事件：PostToolUse
 - matcher：`Write|Edit|MultiEdit`
 - 输入关键字段：`.tool_input.file_path`
@@ -67,7 +80,18 @@
   - 同步统计写入 state
 - 副作用：更新 pipeline state
 
-### 6) `post-write-latex-check.sh`
+### 7) `post-write-stat-check.sh`
+- 事件：PostToolUse
+- matcher：`Write|Edit|MultiEdit`
+- 输入关键字段：`.tool_input.file_path`
+- 行为：
+  - 仅对 `draft.tex` 生效
+  - 从 `.arc/paper-type.json` 读取 `paper_domain` 和 `require_ablation`
+  - 检测有数字无误差报告、cherry-picking 信号词、缺失消融（按条件）
+  - 仅告警，不阻断
+- 副作用：无阻断写入
+
+### 8) `post-write-latex-check.sh`
 - 事件：PostToolUse
 - matcher：`Write|Edit|MultiEdit`
 - 输入关键字段：`.tool_input.file_path`
@@ -77,7 +101,7 @@
   - 不直接覆盖导出阶段完整编译流程
 - 副作用：写入编译错误摘要到 state（如实现）
 
-### 7) `post-write-ai-pattern-check.sh`
+### 9) `post-write-ai-pattern-check.sh`
 - 事件：PostToolUse
 - matcher：`Write|Edit|MultiEdit`
 - 输入关键字段：`.tool_input.file_path`
@@ -86,7 +110,7 @@
   - 输出警告，不阻断
 - 副作用：更新 `ai_pattern_warnings`
 
-### 8) `loop-progress-log.sh`
+### 10) `loop-progress-log.sh`
 - 事件：PostToolUse
 - matcher：`Write|Edit|MultiEdit`
 - 输入关键字段：`.tool_input.file_path`
@@ -94,12 +118,23 @@
   - 依据当前 loop 状态写入 `.arc/loop-logs/*` 轮次日志
 - 副作用：追加 loop 日志文件
 
-### 9) `stop-gate.sh`
+### 11) `pre-experiment-gate.sh`
+- 事件：PreToolUse
+- matcher：`Bash`
+- 输入关键字段：`.tool_input.command`
+- 行为：
+  - 仅拦截实验运行命令
+  - 检查 `.arc/env.json` 且 `compute.validated == true`（不满足则阻断）
+  - 检查 `.arc/paper-type.json` 是否存在（缺失告警）
+  - 尝试检测实验脚本随机种子声明（缺失告警）
+- 副作用：无
+
+### 12) `stop-gate.sh`
 - 事件：Stop
 - matcher：空字符串
 - 行为：
-  - 读取 `review-final.json`、`pipeline-status.json`、`draft.tex`、`references.bib`
-  - 核查：最终审查通过、字数、章节、图表、引用数量与近5年比例
+  - 读取 `review-final.json`、`review-integrity.json`、`review-stat.json`、`pipeline-status.json`、`draft.tex`、`references.bib`
+  - 核查：最终审查通过、页数、章节、图表、引用数量与近5年比例（阈值均来自 `.arc/paper-type.json`）
   - 读取 `.arc/env.json` 并检查 `compute.validated`
   - 若 `compute.mode==ssh`，检查 `active_experiments` 未收集结果提示
   - 有阻断项时返回 `exit 2 + block JSON`

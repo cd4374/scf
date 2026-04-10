@@ -16,10 +16,17 @@
 - Layer 2 或 3 任一失败：标记 `HALLUCINATED`
 - 强制删除该条目，并重新执行验证循环
 
-## 数量门槛
+## 数量门槛（paper-type 驱动）
 
-- 引用总数：`>=20`
-- 近五年占比：`>=60%`
+从 `.arc/paper-type.json` 读取：
+- `derived_thresholds.min_references`
+- `derived_thresholds.min_recent_refs_pct`
+- `exemptions.recent_refs_pct_exempt`
+
+规则：
+- 引用总数必须达到 `min_references`
+- 若未豁免，近五年占比必须达到 `min_recent_refs_pct`
+- 若开启近五年占比豁免，必须记录豁免理由
 
 ## 正文一致性
 

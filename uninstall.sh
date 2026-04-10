@@ -12,9 +12,9 @@ done
 
 echo "About to remove scf artifacts from: $TARGET"
 echo "Will remove:"
-echo "  - .claude/commands/paper-*.md"
-echo "  - .claude/agents/{idea-validator,novelty-checker,literature-reviewer,logic-checker,stat-auditor,figure-auditor,citation-verifier,peer-reviewer-1,peer-reviewer-2,devils-advocate,multi-agent-debate,final-reviewer}.md"
-echo "  - .claude/skills/arc-*/"
+echo "  - .claude/commands/paper-*.md (11 commands)"
+echo "  - .claude/agents/{idea-validator,novelty-checker,literature-reviewer,logic-checker,stat-auditor,figure-auditor,citation-verifier,integrity-checker,peer-reviewer-1,peer-reviewer-2,devils-advocate,multi-agent-debate,final-reviewer}.md (13 agents)"
+echo "  - .claude/skills/arc-*/ (12 skills)"
 echo "  - .arc/"
 echo "  - .claude/settings.json (if present)"
 read -r -p "Proceed? [y/N] " CONFIRM
@@ -36,6 +36,6 @@ rm -f "$TARGET/.claude/settings.json" 2>/dev/null || true
 rm -rf "$TARGET/.arc" 2>/dev/null || true
 
 # keep user project files by design
-# do not remove CLAUDE.md, draft.tex, references.bib
+# do not remove CLAUDE.md, draft.tex, references.bib, paper-type.json
 
 echo "✅ uninstall complete"

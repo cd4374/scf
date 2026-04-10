@@ -23,7 +23,7 @@ PY
 )
   fi
 fi
-REVIEWER_AGENTS="idea-validator novelty-checker literature-reviewer logic-checker stat-auditor figure-auditor citation-verifier peer-reviewer-1 peer-reviewer-2 devils-advocate multi-agent-debate final-reviewer"
+REVIEWER_AGENTS="idea-validator novelty-checker literature-reviewer logic-checker stat-auditor figure-auditor citation-verifier integrity-checker peer-reviewer-1 peer-reviewer-2 devils-advocate multi-agent-debate final-reviewer"
 if echo "$REVIEWER_AGENTS" | grep -qw "$AGENT"; then
   echo '{"decision":"block","reason":"Reviewer agents cannot write draft.tex; write review output to .arc/state/review-*.json"}'
   exit 2

@@ -10,6 +10,7 @@ memory: project
 
 ## Input
 - `draft.tex`
+- `.arc/paper-type.json` — read `require_ablation` before scoring Experimental Adequacy
 
 ## Output
 - `.arc/state/review-peer-1.json`
@@ -19,6 +20,10 @@ memory: project
 {
   "agent": "peer-reviewer-1",
   "timestamp": "ISO-8601",
+  "paper_type_context": {
+    "format": "long",
+    "domain": "ai-experimental"
+  },
   "pass": false,
   "score": 78,
   "decision": "minor",
@@ -38,11 +43,18 @@ memory: project
 ## Weighted dimensions
 - Novelty 25%
 - Technical rigor 20%
-- Experimental sufficiency 20%
-- Writing clarity 15%
+- Experimental sufficiency 20% — **if `require_ablation == true`, ablation study must be present; deduct if missing**
+- Writing clarity 15% — includes Limitations section check (required for ALL paper types)
 - Citation accuracy 10%
 - Reproducibility 5%
 - Impact 5%
+
+## Scoring notes
+
+- Read `.arc/paper-type.json` first. Set `paper_type_context` in output JSON.
+- Experimental Adequacy (20%): deduct points if `require_ablation == true` but no Ablation Study section found.
+- Writing Clarity: mark `missing_limitations` issue if Limitations section absent (all types required).
+- Use `severity: blocking` for missing required sections.
 
 ## Rule
 Read-only reviewer: never modify `draft.tex`.

@@ -27,10 +27,12 @@ printf '{"active_agent":"idea-validator"}\n' > "$TMP/.arc/state/pipeline-status.
 run_hook pre-write-gate.sh draft-write.json 2
 
 # post-write hooks skip non-draft targets
-run_hook post-write-word-count.sh non-draft-write.json 0
+run_hook post-write-page-count.sh non-draft-write.json 0
 run_hook post-write-section-check.sh non-draft-write.json 0
 run_hook post-write-figure-check.sh non-draft-write.json 0
+run_hook post-write-table-check.sh non-draft-write.json 0
 run_hook post-write-citation-check.sh non-draft-write.json 0
+run_hook post-write-stat-check.sh non-draft-write.json 0
 run_hook post-write-latex-check.sh non-draft-write.json 0
 run_hook post-write-ai-pattern-check.sh non-draft-write.json 0
 run_hook loop-progress-log.sh non-draft-write.json 0
@@ -39,16 +41,46 @@ run_hook loop-progress-log.sh non-draft-write.json 0
 cat > "$TMP/.arc/state/review-final.json" <<'EOF'
 {"pass": true}
 EOF
+cat > "$TMP/.arc/state/review-integrity.json" <<'EOF'
+{"pass": true}
+EOF
+cat > "$TMP/.arc/state/review-stat.json" <<'EOF'
+{"pass": true}
+EOF
 cat > "$TMP/.arc/state/pipeline-status.json" <<'EOF'
-{"word_count_ok": true, "word_count": 6200}
+{"page_count": 8}
+EOF
+cat > "$TMP/.arc/paper-type.json" <<'EOF'
+{"page_limit":9,"derived_thresholds":{"min_references":1,"min_figures":1,"min_recent_refs_pct":0}}
 EOF
 cat > "$TMP/.arc/env.json" <<'EOF'
 {"compute":{"validated":true,"mode":"cpu"},"active_experiments":[]}
+EOF
+cat > "$TMP/draft.tex" <<'EOF'
+\includegraphics{fig1.pdf}
+EOF
+touch "$TMP/fig1.pdf"
+cat > "$TMP/references.bib" <<'EOF'
+@article{a1,
+  author = {Doe, Jane},
+  title = {Test Paper},
+  year = {2026},
+  journal = {Test Journal}
+}
 EOF
 run_hook stop-gate.sh non-draft-write.json 0
 
 # stop-gate block path (missing final pass)
 cat > "$TMP/.arc/state/review-final.json" <<'EOF'
+{"pass": false}
+EOF
+run_hook stop-gate.sh non-draft-write.json 2
+
+# stop-gate block path (integrity fail)
+cat > "$TMP/.arc/state/review-final.json" <<'EOF'
+{"pass": true}
+EOF
+cat > "$TMP/.arc/state/review-integrity.json" <<'EOF'
 {"pass": false}
 EOF
 run_hook stop-gate.sh non-draft-write.json 2

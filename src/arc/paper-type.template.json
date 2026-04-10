@@ -1,0 +1,27 @@
+{
+  "paper_format": "long",
+  "paper_domain": "ai-experimental",
+  "target_venue": "NeurIPS",
+  "page_limit": 9,
+  "derived_thresholds": {
+    "min_references": 30,
+    "min_references_note": "long≥30, short≥15, letter≥10",
+    "min_recent_refs_pct": 30,
+    "min_recent_refs_note": "ai-exp≥30%, ai-theory≥15%, physics≥20%, numerical≥20%",
+    "min_figures": 5,
+    "min_figures_note": "ai-exp long≥5, ai-exp short≥3, physics≥4, theory/numerical≥3",
+    "min_tables": 1,
+    "require_ablation": true,
+    "require_ablation_note": "true for ai-experimental and numerical, false for ai-theoretical",
+    "min_experiment_runs": 3,
+    "min_experiment_runs_note": "ai-exp≥3, others as appropriate",
+    "abstract_max_words": 250,
+    "abstract_max_words_note": "long≤250, short≤150",
+    "recent_years_cutoff": 5
+  },
+  "exemptions": {
+    "ablation_exempt": false,
+    "recent_refs_pct_exempt": false,
+    "recent_refs_pct_exempt_reason": ""
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "agent": "integrity-checker",
+  "timestamp": "2026-04-09T12:00:00Z",
+  "paper_type_context": {
+    "format": "long",
+    "domain": "ai-experimental"
+  },
+  "pass": true,
+  "score": 95,
+  "decision": "accept",
+  "data_truth_check": {
+    "passed": true,
+    "issues": []
+  },
+  "figure_truth_check": {
+    "passed": true,
+    "issues": []
+  },
+  "coi_statement_found": true,
+  "license_check": {
+    "passed": true,
+    "issues": []
+  },
+  "image_integrity_check": {
+    "passed": true,
+    "issues": []
+  },
+  "plagiarism_reminder_recorded": true,
+  "issues": [],
+  "strengths": ["All numerical results traceable to experiment JSON", "COI statement present"],
+  "summary": "Integrity check passed: all data and figures traceable, COI and license compliance verified."
+}

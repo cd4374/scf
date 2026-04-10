@@ -1,0 +1,17 @@
+{
+  "agent": "final-reviewer",
+  "timestamp": "2026-04-09T12:00:00Z",
+  "pass": false,
+  "score": 55,
+  "decision": "reject",
+  "issues": [
+    {
+      "location": "Section 4",
+      "type": "missing_ablation",
+      "description": "Ablation study required but missing",
+      "severity": "blocking"
+    }
+  ],
+  "strengths": [],
+  "summary": "Final review failed: missing ablation study"
+}

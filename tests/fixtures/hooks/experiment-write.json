@@ -1,0 +1,1 @@
+{"tool_name": "Write", "tool_input": {"file_path": "/tmp/project/experiments/run.py", "content": "import torch\ntorch.manual_seed(42)\nprint('running experiment')\n"}}

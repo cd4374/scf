@@ -1,0 +1,40 @@
+{
+  "agent": "stat-auditor",
+  "timestamp": "2026-04-09T12:00:00Z",
+  "paper_type_context": {
+    "format": "long",
+    "domain": "ai-experimental"
+  },
+  "pass": false,
+  "score": 60,
+  "decision": "major",
+  "error_bars_missing_count": 5,
+  "cherry_picking_signals": 2,
+  "ablation_present": false,
+  "significance_tests_present": true,
+  "issues": [
+    {
+      "location": "Table 2",
+      "type": "missing_error_bars",
+      "description": "5 results reported without mean±std",
+      "severity": "major",
+      "standard_ref": "质量标准 §5.1"
+    },
+    {
+      "location": "Section 4.3",
+      "type": "cherry_picking",
+      "description": "Only best hyperparameter result reported",
+      "severity": "major",
+      "standard_ref": "质量标准 §5.2"
+    },
+    {
+      "location": "N/A",
+      "type": "missing_ablation",
+      "description": "Ablation study required but not found",
+      "severity": "blocking",
+      "standard_ref": "质量标准 §5.3"
+    }
+  ],
+  "strengths": ["Significance tests properly reported"],
+  "summary": "Statistical compliance issues: missing error bars, cherry-picking signals, ablation required but absent."
+}

@@ -1,0 +1,1 @@
+{"tool_name": "Write", "tool_input": {"file_path": "/tmp/project/.arc/state/review-stat.json", "content": "{\"agent\":\"stat-auditor\",\"pass\":false}"}}

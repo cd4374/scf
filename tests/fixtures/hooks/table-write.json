@@ -1,0 +1,1 @@
+{"tool_name": "Write", "tool_input": {"file_path": "/tmp/project/tables/table1.tex", "content": "\\begin{table}\\n\\centering\\n\\begin{tabular}{lcc}\\n\\toprule\\nModel & Acc & F1\\\\\\n\\midrule\\nOurs & 94.2 & 93.1\\\\\nBaseline & 89.5 & 88.7\\\\\n\\bottomrule\\n\\end{tabular}\\n\\caption{Results on benchmark X}\\n\\end{table}"}}

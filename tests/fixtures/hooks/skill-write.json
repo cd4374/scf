@@ -1,0 +1,1 @@
+{"tool_name": "Write", "tool_input": {"file_path": "/tmp/project/.claude/skills/arc-writing/SKILL.md", "content": "---\nname: arc-writing\ndescription: Write paper drafts.\n---\n\n# Arc Writing\n\nDraft writing skill.\n"}}

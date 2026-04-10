@@ -1,0 +1,32 @@
+{
+  "agent": "integrity-checker",
+  "timestamp": "",
+  "paper_type_context": {
+    "format": "long",
+    "domain": "ai-experimental"
+  },
+  "pass": false,
+  "score": 0,
+  "decision": "reject",
+  "data_truth_check": {
+    "passed": false,
+    "issues": []
+  },
+  "figure_truth_check": {
+    "passed": false,
+    "issues": []
+  },
+  "coi_statement_found": false,
+  "license_check": {
+    "passed": false,
+    "issues": []
+  },
+  "image_integrity_check": {
+    "passed": false,
+    "issues": []
+  },
+  "plagiarism_reminder_recorded": false,
+  "issues": [],
+  "strengths": [],
+  "summary": ""
+}

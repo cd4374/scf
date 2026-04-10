@@ -1,4 +1,4 @@
-# SCF Architecture (v4)
+# SCF Architecture (v5)
 
 ## Design goals
 - Treat `.arc/env.json` as the single source of truth for runtime environment.
@@ -51,20 +51,33 @@ Stop conditions:
 - hit max iterations,
 - review score declines for two consecutive rounds (pause for human intervention).
 
-## Quality gates (authoritative values)
-These values must be consistent across `src/CLAUDE.md`, hooks, reviewer logic, and docs:
-- Body word count: **>= 6000** (excluding references)
-- Required sections: **6** (`Abstract`, `Introduction`, `Related Work`, `Method`, `Experiments`, `Conclusion`)
-- Figure count: **>= 4**, each with real file (300 DPI+)
-- Citation policy: **>= 20** references, **>= 60%** from last 5 years
-- Citation integrity: four-layer verification; hallucinated entries must be removed
-- LaTeX: compile without errors
-- Experimental numbers: must come from real runs (no fabrication)
+## Quality gates (thresholds from paper-type.json)
+
+All numeric quality gates are read from `.arc/paper-type.json` (driven by `derived_thresholds`).
+No quality thresholds are hardcoded in this document or in CLAUDE.md.
+
+Example thresholds (long + ai-experimental):
+- `derived_thresholds.min_references`: **30**
+- `derived_thresholds.min_recent_refs_pct`: **30%**
+- `derived_thresholds.min_figures`: **5**
+- `derived_thresholds.min_tables`: **1**
+- `derived_thresholds.require_ablation`: **true**
+- `derived_thresholds.min_experiment_runs`: **3**
+- `abstract_max_words`: **250**
+- `page_limit`: venue-dependent
+
+Thresholds vary by `paper_format` (long/short/letter) and `paper_domain` (ai-experimental/ai-theoretical/physics/numerical).
+Run `/paper:init` to configure thresholds for your paper type.
+
+Citation integrity: four-layer verification; hallucinated entries must be removed.
+LaTeX: must compile without errors.
+Experimental numbers: must come from real runs (no fabrication).
+Limitations section: required for all paper types.
 
 ## Hook responsibilities
 - `pre-write-gate.sh`: block reviewer agents from writing `draft.tex`.
-- `post-write-*`: update/check word count, sections, figures, citations, latex, AI writing patterns, loop logs.
-- `stop-gate.sh`: final guard that checks final review pass, minimum word count, and env validation status.
+- `post-write-*`: update/check page count, sections, figures/tables, citations, statistics, latex, AI writing patterns, loop logs.
+- `stop-gate.sh`: final guard that checks final/integrity/stat reviews, paper-type-driven quality gates, and env validation status.
 
 ## Why v4 changed from old design
 Older design embedded environment details in CLAUDE markdown fragments. That caused drift and parsing fragility. v4 fixes this by:

@@ -11,19 +11,28 @@ memory: project
 ## Purpose
 
 Final comprehensive review:
-- **Aggregate results**: Combine all review assessments
-- **Academic integrity**: No ethics violations?
-- **Overall readiness**: Is paper ready for submission?
-- **Blocking issues**: Any remaining critical problems?
+- Aggregate all reviewer assessments
+- Verify no blocking issues remain
+- Enforce paper-type-driven quality thresholds
+- Emit final acceptance/revision decision
 
 ## Input
 
-All review files:
+- `.arc/paper-type.json` (required)
 - `.arc/state/review-idea.json`
+- `.arc/state/review-novelty.json`
 - `.arc/state/review-literature.json`
 - `.arc/state/review-logic.json`
 - `.arc/state/review-stat.json`
 - `.arc/state/review-figures.json`
+- `.arc/state/review-citations.json`
+- `.arc/state/review-integrity.json`
+- `.arc/state/review-peer-1.json`
+- `.arc/state/review-peer-2.json`
+- `.arc/state/review-devil.json`
+- `.arc/state/review-debate.json`
+- `draft.tex`
+- `references.bib`
 
 ## Output
 
@@ -32,82 +41,91 @@ All review files:
 {
   "agent": "final-reviewer",
   "timestamp": "ISO-8601",
+  "paper_type_context": {
+    "format": "long",
+    "domain": "ai-experimental"
+  },
   "pass": true,
   "score": 86,
   "decision": "accept",
-  "issues": [
-    {
-      "location": "overall assessment",
-      "type": "unsupported_claim",
-      "description": "Every blocking issue must be listed explicitly.",
-      "severity": "blocking"
-    }
-  ],
-  "strengths": ["Clear contribution statement"],
-  "summary": "One-paragraph final verdict."
+  "issues": [],
+  "strengths": ["All blocking reviews passed"],
+  "summary": "All required reviews pass and paper-type thresholds are satisfied."
 }
 ```
 
-If `pass` is `false`, include at least one issue with `severity: "blocking"`.
+## Paper-type driven checks
+
+Read `.arc/paper-type.json` before any verdict:
+- `derived_thresholds.min_references`
+- `derived_thresholds.min_recent_refs_pct`
+- `derived_thresholds.min_figures`
+- `derived_thresholds.min_tables`
+- `derived_thresholds.require_ablation`
+- `page_limit`
+- `exemptions.recent_refs_pct_exempt`
+
+Do not use fixed numeric gates.
 
 ## Validation criteria
 
 ### Review aggregation
-- All required reviews completed
-- No unresolved blocking issues from any review
-- Consensus on overall quality
+- Required reviews exist and are parseable
+- No unresolved `severity: blocking` issues
+- `review-integrity.json.pass == true`
+- `review-stat.json.pass == true` (required by v5 final gate)
 
-### Academic integrity
-- No plagiarism indicators
-- Proper attribution throughout
-- No fabrication concerns
-- Anonymity preserved (if required)
+### Structural readiness
+- Required sections present (including `Limitations`)
+- If `require_ablation == true`, Ablation section present
 
-### Readiness
-- All prior reviews passed or issues resolved
-- Minimum word count met (6000 words)
-- All required sections present (Abstract, Introduction, Related Work, Method, Experiments, Conclusion)
-- Figure count >=4 and each figure has a real file (300 DPI+)
-- Citation count >=20 and recency >=60% from last 5 years
-- No citation hallucination findings from citation verifier
+### Quantity readiness (from paper-type)
+- Figures >= `min_figures`
+- Tables >= `min_tables`
+- References >= `min_references`
+- Recent references % >= `min_recent_refs_pct` unless exempt
+- Page count <= `page_limit`
 
-### Blocking issues
-- Any `severity: "blocking"` from prior reviews
-- Any unresolved critical problems
+### Citation integrity
+- No hallucinated citation findings unresolved
+- Bib entries aligned with in-text citations
 
 ## Review aggregation rules
 
 | Review | Required for pass |
 |--------|------------------|
-| idea-validator | Yes |
+| idea-validator / novelty-checker | Yes |
 | literature-reviewer | Yes |
 | logic-checker | Yes |
 | stat-auditor | Yes |
 | figure-auditor | Yes |
-
-All must have `pass: true` for final pass.
+| citation-verifier | Yes |
+| integrity-checker | Yes |
+| peer-reviewers + devils-advocate | Yes |
 
 ## Procedure
 
-1. Read all `review-*.json` files
-2. Aggregate issues by severity
-3. Check academic integrity
-4. Assess overall readiness
-5. Write structured review to `.arc/state/review-final.json`
+1. Read `.arc/paper-type.json` and cache threshold context.
+2. Read all `review-*.json` files.
+3. Aggregate issues by severity and deduplicate blockers.
+4. Verify all threshold-dependent checks using paper-type values.
+5. Write `.arc/state/review-final.json`.
 
 ## Pass criteria
 
 `pass: true` requires:
-- All prior reviews passed (`pass: true`)
+- All required review files have `pass: true`
 - No `severity: "blocking"` issues
-- Score ≥ 70
-- Academic integrity confirmed
-- Minimum word count met (6000)
-- Minimum figure count met (4)
-- Minimum citation count met (20 with >=60% recent)
+- Score >= 70
+- Threshold checks pass using `.arc/paper-type.json`
+
+## Allowed issue `type` values
+
+Use enum-compatible types only, e.g.:
+`unsupported_claim`, `contradiction`, `gap`, `missing_ref`, `hallucinated_ref`, `stat_error`, `cherry_picking`, `missing_ablation`, `missing_limitations`, `missing_error_bars`, `missing_significance_test`, `figure_missing`, `figure_quality`, `figure_format`, `figure_colorblind`, `table_missing`, `reproducibility_issue`, `integrity_violation`, `premise_attack`.
 
 ## Key constraints
 
-- READ-ONLY: No Write/Edit tools
-- Output to `.arc/state/review-final.json` only
-- Never modify any paper files
+- READ-ONLY: no Write/Edit tools
+- Output only to `.arc/state/review-final.json`
+- Never modify `draft.tex`

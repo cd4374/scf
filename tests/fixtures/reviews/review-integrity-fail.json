@@ -1,0 +1,53 @@
+{
+  "agent": "integrity-checker",
+  "timestamp": "2026-04-09T12:00:00Z",
+  "paper_type_context": {
+    "format": "long",
+    "domain": "ai-experimental"
+  },
+  "pass": false,
+  "score": 45,
+  "decision": "reject",
+  "data_truth_check": {
+    "passed": false,
+    "issues": [
+      {
+        "location": "Table 3, Row 2",
+        "description": "Reported accuracy 94.2% not found in any experiment result JSON",
+        "severity": "blocking"
+      }
+    ]
+  },
+  "figure_truth_check": {
+    "passed": true,
+    "issues": []
+  },
+  "coi_statement_found": false,
+  "license_check": {
+    "passed": true,
+    "issues": []
+  },
+  "image_integrity_check": {
+    "passed": true,
+    "issues": []
+  },
+  "plagiarism_reminder_recorded": true,
+  "issues": [
+    {
+      "location": "Table 3",
+      "type": "integrity_violation",
+      "description": "Reported accuracy 94.2% not found in any experiment result JSON",
+      "severity": "blocking",
+      "standard_ref": "质量标准 §六（数据真实性）"
+    },
+    {
+      "location": "N/A",
+      "type": "missing_coi_statement",
+      "description": "No Conflict of Interest statement found",
+      "severity": "major",
+      "standard_ref": "质量标准 §六（利益冲突声明）"
+    }
+  ],
+  "strengths": [],
+  "summary": "Integrity check failed: untraceable numerical result and missing COI statement."
+}

@@ -1,9 +1,16 @@
 {
   "stage": "not-started",
   "journal": "",
-  "word_count": 0,
-  "word_count_ok": false,
+  "paper_type": {
+    "format": "",
+    "domain": "",
+    "target_venue": "",
+    "page_limit": 0
+  },
   "figure_count": 0,
+  "table_count": 0,
+  "reference_count": 0,
+  "page_count": 0,
   "active_agent": "",
   "stages_completed": [],
   "last_updated": "",

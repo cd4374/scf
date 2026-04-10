@@ -1,147 +1,203 @@
 ---
 name: arc-state-management
-description: Maintains JSON state contracts as the cross-agent and cross-session source of execution truth. Use when validating, updating, and synchronizing pipeline, review, loop, and reproducibility state files.
+description: Defines read/write protocols for .arc/state/ files, including schemas, stage transitions, and loop status tracking. Use when reading, updating, or validating pipeline state across sessions.
 ---
 
 # Arc State Management
 
 ## Purpose
 
-`arc-state-management` 定义 `.arc/state/*.json` 的协议，确保命令、skills、agents 在同一状态模型上协作。
+Define the canonical state file schemas and read/write protocols for `.arc/state/`.
 
-## State bus contract
+## State directory structure
 
-- 跨 agent / 跨会话状态只能通过 `.arc/state/*.json` 传递
-- 不依赖对话上下文作为状态源
+```
+.arc/state/
+├── pipeline-status.json   # Main pipeline state (single source of truth)
+├── idea.json              # Research idea details
+├── reproducibility.json   # Reproducibility artifacts
+├── review-*.json          # Review outputs (13 files)
+└── loop_logs/             # Loop iteration logs
+```
 
-## Required pipeline stage values
+## Pipeline stages (v5, authoritative)
 
-- not-started
-- idea-exploration
-- idea-validation
-- literature-review
-- synthesis
-- hypothesis-generation
-- experiment-design
-- experiment-run
-- result-analysis
-- writing
-- figure-generation
-- citation-verification
-- peer-review
-- codex-review
-- final-review
-- export
-- completed
+**Must stay identical across 5 locations**:
+- `docs/pipeline-states.md`
+- `src/commands/paper-run.md`
+- `src/skills/arc-pipeline/SKILL.md`
+- `src/skills/arc-state-management/SKILL.md`
+- `src/arc/state/pipeline-status.json`
 
-## Required files
+```
+not-started → paper-init → idea-exploration → idea-validation →
+literature-review → synthesis → hypothesis-generation →
+experiment-design → experiment-run → result-analysis →
+writing → figure-generation → citation-verification →
+integrity-check → stat-audit → peer-review → codex-review →
+final-review → export → completed
+```
 
-- `pipeline-status.json`
-- `idea.json`
-- `reproducibility.json`
-- `review-idea.json`
-- `review-novelty.json`
-- `review-literature.json`
-- `review-logic.json`
-- `review-stat.json`
-- `review-figures.json`
-- `review-citations.json`
-- `review-peer-1.json`
-- `review-peer-2.json`
-- `review-devil.json`
-- `review-debate.json`
-- `review-codex.json`
-- `review-final.json`
+**v5 new stages**: `paper-init`, `integrity-check`, `stat-audit`
 
-## pipeline-status.json required fields
-
-- `stage`
-- `journal`
-- `word_count`
-- `word_count_ok`
-- `figure_count`
-- `active_agent`
-- `stages_completed`
-- `last_updated`
-- `loop_status`
-- `ai_pattern_warnings`
-- `active_experiments`
-
-## loop_status schema
+## pipeline-status.json schema
 
 ```json
 {
-  "idea_loop": {
-    "current_round": 0,
-    "max_rounds": 3,
-    "best_score": 0,
-    "status": "not-started|running|completed|max-iter-reached"
+  "stage": "string (one of above values)",
+  "journal": "string",
+  "paper_type": {
+    "format": "long | short | letter",
+    "domain": "ai-experimental | ai-theoretical | physics | numerical",
+    "target_venue": "string",
+    "page_limit": "integer"
   },
-  "review_loop": {
-    "current_round": 0,
-    "max_rounds": 4,
-    "best_score": 0,
-    "score_history": [],
-    "status": "not-started|running|completed|max-iter-reached|human-intervention-needed"
+  "figure_count": "integer",
+  "table_count": "integer",
+  "reference_count": "integer",
+  "page_count": "integer",
+  "active_agent": "string",
+  "stages_completed": ["string"],
+  "last_updated": "ISO-8601",
+  "loop_status": {
+    "idea_loop": {
+      "current_round": "integer",
+      "max_rounds": 3,
+      "best_score": "integer",
+      "status": "not-started | in-progress | completed | max-iter-reached | human-intervention-needed"
+    },
+    "review_loop": {
+      "current_round": "integer",
+      "max_rounds": 4,
+      "best_score": "integer",
+      "score_history": ["integer"],
+      "status": "string"
+    },
+    "figure_loop": {
+      "current_round": "integer",
+      "max_rounds": 5,
+      "figures": {"fig_id": "score"},
+      "status": "string"
+    },
+    "citation_loop": {
+      "current_round": "integer",
+      "max_rounds": 3,
+      "verified_count": "integer",
+      "hallucinated_count": "integer",
+      "status": "string"
+    }
   },
-  "figure_loop": {
-    "current_round": 0,
-    "max_rounds": 5,
-    "figures": {},
-    "status": "not-started|running|completed|max-iter-reached"
-  },
-  "citation_loop": {
-    "current_round": 0,
-    "max_rounds": 3,
-    "verified_count": 0,
-    "hallucinated_count": 0,
-    "status": "not-started|running|completed|max-iter-reached"
+  "ai_pattern_warnings": ["string"],
+  "active_experiments": [
+    {
+      "session_name": "string",
+      "host": "string",
+      "status": "running | completed | collected",
+      "started_at": "ISO-8601"
+    }
+  ],
+  "blocking_issues": [
+    {
+      "type": "string",
+      "details": "any",
+      "severity": "blocking | major | minor"
+    }
+  ],
+  "citation_status": {
+    "verified_count": "integer",
+    "hallucinated_count": "integer"
   }
 }
 ```
 
-## Review schema baseline
+**v5 deprecated fields**: `word_count`, `word_count_ok` (replaced by `page_count` + `paper-type.page_limit`)
 
-每个 `review-*.json` 应满足统一结构：
-- `agent`
-- `timestamp`
-- `pass`
-- `score`
-- `decision`
-- `issues[]`
-- `strengths[]`
-- `summary`
+## Read protocol
 
-约束：`pass=false` 时至少一个 `issues[].severity=blocking`。
+All skills/agents reading state:
 
-## Update rules
+1. Use `Read` tool on `.arc/state/pipeline-status.json`
+2. Parse with JSON (no grep/sed)
+3. Check `blocking_issues` before advancing
+4. For reviewers: pass `paper_type` context to review output
 
-1. 所有状态更新应保持 JSON 合法性。
-2. 仅更新必要字段，避免覆盖无关状态。
-3. 关键阶段切换必须同步 `last_updated` 与 `stages_completed`。
-4. loop 轮次日志与 loop_status 必须同步。
+## Write protocol
 
-## Consistency matrix
+All skills/agents writing state:
 
-以下内容必须一致：
-- stage 列表：commands/docs/skills/state 模板
-- reviewer 名称：commands/hooks/agents/skills
-- loop 参数：CLAUDE.md/commands/docs
+1. Read existing state first (no blind overwrites)
+2. Preserve all existing fields not being updated
+3. Always update `last_updated` timestamp
+4. Append to arrays (blocking_issues, stages_completed) rather than replace unless explicit reset
+5. Use `json.dump(indent=2)` for readability
 
-## Failure handling
+## Loop status updates
 
-- 文件缺失：创建或恢复模板并记录 warning
-- JSON 不合法：停止推进并返回 blocking issue
-- 字段缺失：填默认值并记录兼容修复说明
+**idea_loop**: Update after each idea generation round
+**review_loop**: Update score_history after each review, check for 2-consecutive-decline
+**figure_loop**: Update per-figure scores
+**citation_loop**: Update verified/hallucinated counts
 
-## Integration points
+## Blocking issues schema
 
-- `arc-pipeline`：阶段推进与阻断状态
-- `arc-experiment`：active_experiments
-- `arc-citation-style`：citation loop 统计
-- hooks：字数/章节/图表/AI 警告回写
+```json
+{
+  "type": "missing_sections | missing_figures | missing_table | citation_threshold | page_limit | integrity_violation | stat_violation",
+  "details": ["string"] | "string",
+  "severity": "blocking | major | minor"
+}
+```
+
+## Review output schema (v5 unified)
+
+```json
+{
+  "agent": "string",
+  "timestamp": "ISO-8601",
+  "paper_type_context": {
+    "format": "string",
+    "domain": "string"
+  },
+  "pass": "boolean",
+  "score": "integer 0-100",
+  "decision": "accept | minor | major | reject | pass | fail",
+  "issues": [
+    {
+      "location": "string",
+      "type": "string (enum)",
+      "description": "string",
+      "severity": "blocking | major | minor",
+      "standard_ref": "string (optional)"
+    }
+  ],
+  "strengths": ["string"],
+  "summary": "string"
+}
+```
+
+## Issue type enum (v5)
+
+```
+unsupported_claim | circular | contradiction | gap | missing_ref | hallucinated_ref | wrong_format | stat_error | cherry_picking | missing_ablation | missing_limitations | missing_error_bars | missing_significance_test | figure_missing | figure_quality | figure_format | figure_colorblind | table_missing | novelty_insufficient | reproducibility_issue | integrity_violation | ai_writing_pattern | premise_attack
+```
+
+## Cross-session recovery
+
+When context compacts:
+
+1. Read `pipeline-status.json` first
+2. Read `.arc/env.json` for compute context
+3. Read `.arc/paper-type.json` for thresholds
+4. Resume from `stage` value, check `blocking_issues`
+
+## Synchronization points
+
+State must stay consistent with:
+- Hooks update state via Python embedded scripts
+- Commands update state via skill orchestration
+- Reviewers output to state via subagent writes
 
 ## Notes
 
-- 状态文件是系统“事实层”，所有门控判断应优先依赖它。
-- 对状态的任何写入都必须可追踪、可复核。
+- This skill defines protocol; actual writes happen via skills/commands/hooks
+- Never modify state manually; use defined entry points

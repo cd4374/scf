@@ -7,20 +7,30 @@ description: Orchestrates end-to-end pipeline stage transitions with strict bloc
 
 ## Purpose
 
-`arc-pipeline` 是全流程编排核心，负责阶段推进、阻断判断、循环状态同步。
+`arc-pipeline` is the orchestration core for stage progression, blocking checks, and loop state synchronization.
 
-## Authoritative stage order
+## Authoritative stage order (v5)
 
-not-started → idea-exploration → idea-validation → literature-review → synthesis → hypothesis-generation → experiment-design → experiment-run → result-analysis → writing → figure-generation → citation-verification → peer-review → codex-review → final-review → export → completed
+```
+not-started → paper-init → idea-exploration → idea-validation →
+literature-review → synthesis → hypothesis-generation →
+experiment-design → experiment-run → result-analysis →
+writing → figure-generation → citation-verification →
+integrity-check → stat-audit → peer-review → codex-review →
+final-review → export → completed
+```
+
+**v5 new stages**: `paper-init`, `integrity-check`, `stat-audit`
 
 ## Inputs
 
 - `.arc/state/pipeline-status.json`
 - `.arc/state/review-*.json`
 - `.arc/env.json`
-- slash command 参数（run/resume/loop）
+- `.arc/paper-type.json`
+- slash command parameters (run/resume/loop)
 
-## Reviewer set (must stay consistent)
+## Reviewer set (13 agents, v5)
 
 - idea-validator
 - novelty-checker
@@ -29,6 +39,7 @@ not-started → idea-exploration → idea-validation → literature-review → s
 - stat-auditor
 - figure-auditor
 - citation-verifier
+- integrity-checker (v5 new)
 - peer-reviewer-1
 - peer-reviewer-2
 - devils-advocate
@@ -37,17 +48,18 @@ not-started → idea-exploration → idea-validation → literature-review → s
 
 ## Core contracts
 
-1. 任何阶段推进前先读 `pipeline-status.json`。
-2. 有 blocking issue 时不得推进。
-3. reviewer subagents 只读审查，输出 `.arc/state/review-*.json`。
-4. 跨轮次状态仅通过 `.arc/state/*.json` 与 `.arc/loop-logs/*`。
+1. Read `pipeline-status.json` before any stage advance.
+2. No advance when blocking issues exist.
+3. Reviewer subagents are read-only; output to `.arc/state/review-*.json`.
+4. Cross-session state via `.arc/state/*.json` and `.arc/loop-logs/*`.
+5. All quantity thresholds read from `.arc/paper-type.json`.
 
 ## Stage transition rules
 
-- run: 从当前 stage 或 not-started 启动
-- resume: 从中断 stage 恢复
-- reset: 仅重置指定阶段及其下游相关状态
-- export: 仅在 final-review pass 后允许
+- run: Start from current stage or not-started
+- resume: Resume from interrupted stage
+- reset: Reset only specified stage and downstream
+- export: Only after final-review pass
 
 ## Loop integration
 
@@ -56,18 +68,19 @@ not-started → idea-exploration → idea-validation → literature-review → s
 - figure-loop `MAX_ITER=5`
 - citation-loop `MAX_ITER=3`
 
-review-loop 需支持“连续两轮分数下降 -> human-intervention-needed”。
+review-loop supports "two consecutive score drops → human-intervention-needed".
 
 ## Blocking gate examples
 
-- env 未验证（`compute.validated=false`）
-- review-final 未通过
-- 引用/图表/字数未达标
-- 关键 reviewer 输出含 blocking
+- env not validated (`compute.validated=false`)
+- review-final not passed
+- review-integrity not passed (v5)
+- review-stat not passed (v5)
+- refs/figures/pages below paper-type thresholds
 
 ## Synchronization points
 
-必须与以下文件保持一致：
+Must stay consistent with:
 - `docs/pipeline-states.md`
 - `src/commands/paper-run.md`
 - `src/skills/arc-state-management/SKILL.md`
@@ -75,17 +88,17 @@ review-loop 需支持“连续两轮分数下降 -> human-intervention-needed”
 
 ## Failure handling
 
-- 状态文件缺失：写入阻断原因并停止推进
-- reviewer 输出不合法：标记 fail，要求重跑对应审查
-- loop 达到 max_iter：状态记为 `max-iter-reached`
+- Missing state file: write blocking reason and stop
+- Invalid reviewer output: mark fail, require re-run
+- Loop max_iter reached: state marked `max-iter-reached`
 
 ## Output expectations
 
-- 更新 `pipeline-status.json`：`stage`、`stages_completed`、`last_updated`、`loop_status`
-- 写入必要 loop logs
-- 对用户输出当前阶段与阻断摘要
+- Update `pipeline-status.json`: `stage`, `stages_completed`, `last_updated`, `loop_status`
+- Write necessary loop logs
+- Output current stage and blocking summary to user
 
 ## Notes
 
-- 本 skill 负责编排，不直接替代具体实验/写作/引用处理 skill。
-- 所有门控值必须与 `src/CLAUDE.md`、hooks、docs 保持一致。
+- This skill orchestrates; does not replace experiment/writing/citation skills.
+- All gate values read from `paper-type.json`, not hardcoded.

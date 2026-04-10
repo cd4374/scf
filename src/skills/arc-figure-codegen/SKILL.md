@@ -7,63 +7,77 @@ description: Generates reproducible paper figures from code and runs iterative v
 
 ## Purpose
 
-`arc-figure-codegen` 负责将实验结果转为可重复、可审查的图表资产，并通过视觉审查循环提升质量。
+`arc-figure-codegen` transforms experimental results into reproducible, auditable figures with iterative visual quality loops.
 
 ## Inputs
 
-- 实验结果文件（结构化 JSON/CSV）
-- 图表生成代码
-- 目标论文图表需求（数量、类型、章节对应）
+- Experimental result files (structured JSON/CSV)
+- Figure generation code (`.py`)
+- Target figure requirements (count, types, section mapping)
+- `.arc/paper-type.json` (read `min_figures`)
 
 ## Outputs
 
-- 版本化图表文件：`fig_N_v{iter}.pdf/png`
-- 图表审查结果：`review-figures.json`（由 figure-auditor 消费）
-- figure-loop 轮次日志：`.arc/loop-logs/figure-rounds/figure-round-{N}.json`
+- Versioned figure files: `fig_N_v{iter}.pdf/png`
+- Figure audit results: `review-figures.json`
+- Figure-loop logs: `.arc/loop-logs/figure-rounds/figure-round-{N}.json`
 
 ## Generation contract
 
-- 必须从代码渲染，不允许手工截图替代。
-- 分辨率不少于 300 DPI。
-- 每轮保留版本，不覆盖历史文件。
-- 图表与正文引用必须可对应。
+- Must render from code; no manual screenshots.
+- Vector format (`.pdf`/`.eps`) for charts, flowcharts, structure diagrams.
+- Raster format (`.png`/`.jpg`) ≥300 DPI for screenshots, heatmaps.
+- Embed fonts (matplotlib: `pdf.use14corefonts: False`).
+- Minimum font size 8pt (at print size).
+- Axis labels with variable names and units.
+- Versioned, not overwritten.
 
-## Visual audit dimensions (5)
+## Visual audit dimensions (8, v5)
 
-1. 准确性（数据映射正确）
-2. 可读性（字号、线宽、标签）
-3. 无截断（坐标轴、图例、标题完整）
-4. 色彩可访问性（避免不可区分配色）
-5. 标题/说明完整（含必要上下文）
+1. **Content accuracy**: Numbers match draft.tex data
+2. **Readability**: Fonts legible, legends clear
+3. **No truncation**: All content visible, no overflow
+4. **Color-blind friendly**: No pure red-green contrast; Okabe-Ito/Viridis/CUD palettes
+5. **Title/caption completeness**: Figure X numbering + full caption with conditions
+6. **Axis completeness**: Variable names, units, tick marks, no excessive whitespace
+7. **Error bar meaning**: Caption explains std/std err/CI if present
+8. **Style consistency**: Same colors and line types for similar curves across paper
 
 ## Loop controls
 
 - `MAX_ITER=5`
 - `SCORE_THRESHOLD=8.0`
-- 每轮只修复 top-3 问题，避免整体重写
+- Fix only top-3 issues per round (avoid full rewrites)
 
 ## Recommended round process
 
-1. 渲染当前版本图表
-2. 调用审查（VLM 或 figure-auditor）
-3. 汇总 top-3 问题
-4. 定向修改图表代码
-5. 重新渲染并记录分数变化
-6. 更新 loop_status.figure_loop
+1. Render current figure version.
+2. Call audit (VLM or figure-auditor).
+3. Aggregate top-3 issues.
+4. Targeted code fixes.
+5. Re-render and record score change.
+6. Update `loop_status.figure_loop`.
+
+## Quantity check (read from paper-type.json)
+
+- Total figures ≥ `min_figures` (ai-exp long: 5, others: 3+)
+- Total tables ≥ `min_tables` (default: 1)
+- Appendix figures numbered separately (Figure A1, A2...) and do NOT count toward main body minimum.
 
 ## Blocking conditions
 
-- 图表数量不足（<4）
-- 图表文件缺失或路径失效
-- 核心图表分数长期低于阈值且达到 MAX_ITER
+- Figure count < `min_figures`
+- Missing figure files or broken `\includegraphics` paths
+- Core figure score below threshold after MAX_ITER
 
 ## Integration points
 
-- 与 `post-write-figure-check.sh` 联动验证 `\includegraphics` 文件存在性
-- 与 `paper-figure-loop` 命令共享轮次与终止条件
-- 与 `paper-export` 联动打包最终图表资产
+- `post-write-figure-check.sh`: validates `\includegraphics` paths and counts
+- `paper-figure-loop`: shares round/termination logic
+- `paper-export`: bundles final figure assets
+- `post-write-table-check.sh`: validates table counts
 
-## Suggested figure metadata
+## Figure metadata
 
 - `figure_id`
 - `version`
@@ -75,5 +89,6 @@ description: Generates reproducible paper figures from code and runs iterative v
 
 ## Notes
 
-- 图表是论文主证据之一，必须可追溯到实验输出。
-- 若图表与正文 claim 不一致，优先修正数据映射，再修美观问题。
+- Figures are primary evidence; must trace to experimental output.
+- If figure-data mismatch, fix data mapping before aesthetics.
+- All thresholds from `paper-type.json`, not hardcoded.

@@ -17,6 +17,7 @@
     { "src": "src/arc/figures/", "dest": ".arc/figures/", "action": "copy-dir" },
     { "src": "src/arc/loop-logs/", "dest": ".arc/loop-logs/", "action": "copy-dir" },
     { "src": "src/arc/env.template.json", "dest": ".arc/env.template.json", "action": "copy" },
+    { "src": "src/arc/paper-type.template.json", "dest": ".arc/paper-type.template.json", "action": "copy" },
     { "src": "src/arc/env-probe.sh", "dest": ".arc/env-probe.sh", "action": "copy" },
     { "src": "src/arc/env-validate.sh", "dest": ".arc/env-validate.sh", "action": "copy" },
     { "src": "src/arc/conda-setup.sh", "dest": ".arc/conda-setup.sh", "action": "copy" },
@@ -27,6 +28,12 @@
     ".arc/env.json",
     ".arc/state/",
     ".arc/loop-logs/",
-    ".arc/memory/"
+    ".arc/memory/",
+    "__pycache__/",
+    "*.pyc",
+    "*.pyo",
+    ".pytest_cache/",
+    "tests/tmp/",
+    "tests/output/"
   ]
 }

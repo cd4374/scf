@@ -1,9 +1,18 @@
 {
   "agent": "citation-verifier",
   "timestamp": "",
+  "paper_type_context": {
+    "format": "",
+    "domain": ""
+  },
   "pass": false,
   "score": 0,
   "decision": "fail",
+  "total_citations": 0,
+  "min_references": 30,
+  "recent_refs_pct": 0,
+  "min_recent_refs_pct": 30,
+  "hallucinated_count": 0,
   "citations": [],
   "issues": [
     {

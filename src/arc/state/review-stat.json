@@ -1,6 +1,10 @@
 {
   "agent": "stat-auditor",
   "timestamp": "",
+  "paper_type_context": {
+    "format": "",
+    "domain": ""
+  },
   "pass": false,
   "score": 0,
   "decision": "fail",

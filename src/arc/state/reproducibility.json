@@ -2,5 +2,7 @@
   "random_seeds": [42],
   "datasets": [],
   "environment_snapshot_path": ".arc/environment.yml",
+  "hardware_info": {},
+  "software_versions": {},
   "sanity_check_passed": false
 }

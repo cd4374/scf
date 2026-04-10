@@ -38,10 +38,17 @@ description: Enforces citation integrity with four-layer verification and biblio
 - 该条目必须从可交付版本中删除
 - 删除后重新计算引用数量与近五年占比
 
-## Quantity gates
+## Quantity gates (paper-type driven)
 
-- 引用总数 `>=20`
-- 近五年占比 `>=60%`
+Read `.arc/paper-type.json` and enforce:
+- `derived_thresholds.min_references`
+- `derived_thresholds.min_recent_refs_pct`
+- `exemptions.recent_refs_pct_exempt`
+
+Rules:
+- 引用总数必须 `>= min_references`
+- 若 `recent_refs_pct_exempt != true`，近五年占比必须 `>= min_recent_refs_pct`
+- 若豁免开启，必须在结果中记录豁免理由
 
 ## Alignment checks
 

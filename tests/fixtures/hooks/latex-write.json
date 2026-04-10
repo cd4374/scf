@@ -1,0 +1,1 @@
+{"tool_name": "Write", "tool_input": {"file_path": "/tmp/project/figures/fig1.py", "content": "# figure source code\nimport matplotlib.pyplot as plt\nplt.plot([1,2,3],[4,5,6])\nplt.savefig('fig1.pdf')\n"}}

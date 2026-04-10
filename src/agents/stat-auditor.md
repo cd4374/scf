@@ -19,6 +19,8 @@ Audits statistical integrity:
 ## Input
 
 - `draft.tex` (read-only)
+- `.arc/paper-type.json` — read `paper_domain`, `min_experiment_runs`, `require_ablation`
+- `.arc/state/` — experiment result JSON files
 - `experiment_summary.json`
 - `results_table.tex`
 - `data_validation.json` (if available)
@@ -30,21 +32,39 @@ Audits statistical integrity:
 {
   "agent": "stat-auditor",
   "timestamp": "ISO-8601",
+  "paper_type_context": {
+    "format": "long | short | letter",
+    "domain": "ai-experimental | ai-theoretical | physics | numerical"
+  },
   "pass": true | false,
   "score": 0-100,
+  "decision": "accept | minor | major | reject | pass | fail",
+  "error_bars_missing_count": 0,
+  "cherry_picking_signals": 0,
+  "ablation_present": true | false,
+  "significance_tests_present": true | false,
   "issues": [
     {
       "location": "Section 4, results paragraph 3",
-      "type": "stat_error | numeric_mismatch | reproducibility",
+      "type": "stat_error | numeric_mismatch | reproducibility | missing_error_bars | missing_significance_test | cherry_picking | missing_ablation",
       "description": "具体描述",
-      "severity": "blocking | warning"
+      "severity": "blocking | major | minor",
+      "standard_ref": "质量标准 §X.X"
     }
   ],
+  "strengths": [],
   "summary": "一段话总结"
 }
 ```
 
 ## Validation criteria
+
+### Paper-type driven checks
+
+Read `.arc/paper-type.json` first:
+- `paper_domain`: ai-experimental | ai-theoretical | physics | numerical
+- `min_experiment_runs`: minimum independent runs required (default 3 for ai-exp)
+- `require_ablation`: whether ablation study is required
 
 ### Numeric truth
 - All numbers in paper match `experiment_summary.json`
@@ -68,11 +88,35 @@ Audits statistical integrity:
 
 ## Procedure
 
-1. Read `draft.tex` and extract all numeric claims
-2. Cross-reference with `experiment_summary.json`
-3. Check statistical method appropriateness
-4. Verify reproducibility artifacts exist
-5. Write structured review to `.arc/state/review-stat.json`
+1. Read `.arc/paper-type.json` for `paper_domain`, `min_experiment_runs`, `require_ablation`
+2. Read `draft.tex` and extract all numeric claims
+3. Cross-reference with `experiment_summary.json`
+4. Check statistical method appropriateness
+5. Apply domain-specific checks (see below)
+6. Verify reproducibility artifacts exist
+7. Write structured review to `.arc/state/review-stat.json`
+
+## Domain-specific checks
+
+| Domain | Required checks |
+|--------|----------------|
+| ai-experimental | Error bars (mean±std), significance tests, ablation present |
+| ai-theoretical | Theoretical claims supported, no empirical cherry-picking |
+| physics | Systematic vs random error distinction |
+| numerical | Grid independence (≥2 grids), convergence order reported |
+
+### Ablation check (ai-experimental, numerical)
+
+If `require_ablation == true`:
+- [ ] Ablation Study section exists in `draft.tex`
+- [ ] Each core innovation component has independent ablation对照
+- [ ] Results show contribution of each component
+
+### Error bars check (all domains)
+
+- [ ] All quantitative results report **mean ± std** (or std error)
+- [ ] Independent runs ≥ `min_experiment_runs` (ai-experimental default: 3)
+- [ ] Figure captions explain error bar meaning
 
 ## Numeric comparison rules
 

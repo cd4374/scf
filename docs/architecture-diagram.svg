@@ -1,0 +1,321 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 850">
+  <defs>
+    <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#1a365d"/>
+      <stop offset="100%" style="stop-color:#2d3748"/>
+    </linearGradient>
+    <linearGradient id="inputGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#48bb78"/>
+      <stop offset="100%" style="stop-color:#38a169"/>
+    </linearGradient>
+    <linearGradient id="cmdGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4299e1"/>
+      <stop offset="100%" style="stop-color:#3182ce"/>
+    </linearGradient>
+    <linearGradient id="pipelineGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ed8936"/>
+      <stop offset="100%" style="stop-color:#dd6b20"/>
+    </linearGradient>
+    <linearGradient id="skillsGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#9f7aea"/>
+      <stop offset="100%" style="stop-color:#805ad5"/>
+    </linearGradient>
+    <linearGradient id="agentsGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#fc8181"/>
+      <stop offset="100%" style="stop-color:#f56565"/>
+    </linearGradient>
+    <linearGradient id="stateGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4fd1c5"/>
+      <stop offset="100%" style="stop-color:#38b2ac"/>
+    </linearGradient>
+    <linearGradient id="hooksGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#f6ad55"/>
+      <stop offset="100%" style="stop-color:#ed8936"/>
+    </linearGradient>
+    <linearGradient id="outputGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#68d391"/>
+      <stop offset="100%" style="stop-color:#48bb78"/>
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.2"/>
+    </filter>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#2d3748"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="850" fill="#f7fafc"/>
+
+  <!-- Title -->
+  <rect x="20" y="15" width="1160" height="50" rx="8" fill="url(#headerGrad)" filter="url(#shadow)"/>
+  <text x="600" y="48" font-family="Arial, sans-serif" font-size="26" font-weight="bold" fill="white" text-anchor="middle">scf Architecture Flow</text>
+
+  <!-- ==================== MAIN FLOW ROW (y: 85-340) ==================== -->
+
+  <!-- Layer 1: Input -->
+  <rect x="30" y="85" width="110" height="110" rx="6" fill="url(#inputGrad)" filter="url(#shadow)"/>
+  <text x="85" y="112" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">INPUT</text>
+  <rect x="42" y="125" width="86" height="26" rx="4" fill="white" fill-opacity="0.2"/>
+  <text x="85" y="143" font-family="monospace" font-size="11" fill="white" text-anchor="middle">idea + journal</text>
+  <rect x="42" y="158" width="86" height="26" rx="4" fill="white" fill-opacity="0.2"/>
+  <text x="85" y="177" font-family="monospace" font-size="10" fill="white" text-anchor="middle">.arc/env.json</text>
+
+  <!-- Arrow: Input -> Commands -->
+  <line x1="140" y1="140" x2="165" y2="140" stroke="#2d3748" stroke-width="2.5" marker-end="url(#arrowhead)"/>
+
+  <!-- Layer 2: Commands -->
+  <rect x="170" y="85" width="145" height="230" rx="6" fill="url(#cmdGrad)" filter="url(#shadow)"/>
+  <text x="242" y="112" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">Commands</text>
+
+  <rect x="182" y="128" width="121" height="26" rx="4" fill="white" fill-opacity="0.15"/>
+  <text x="242" y="146" font-family="monospace" font-size="11" fill="white" text-anchor="middle">/paper:run</text>
+
+  <rect x="182" y="162" width="121" height="26" rx="4" fill="white" fill-opacity="0.15"/>
+  <text x="242" y="180" font-family="monospace" font-size="11" fill="white" text-anchor="middle">/paper:status</text>
+
+  <rect x="182" y="196" width="121" height="26" rx="4" fill="white" fill-opacity="0.15"/>
+  <text x="242" y="214" font-family="monospace" font-size="11" fill="white" text-anchor="middle">/paper:resume</text>
+
+  <rect x="182" y="230" width="121" height="26" rx="4" fill="white" fill-opacity="0.15"/>
+  <text x="242" y="248" font-family="monospace" font-size="11" fill="white" text-anchor="middle">/paper:reset</text>
+
+  <rect x="182" y="264" width="121" height="26" rx="4" fill="white" fill-opacity="0.15"/>
+  <text x="242" y="282" font-family="monospace" font-size="11" fill="white" text-anchor="middle">/paper:*-loop</text>
+
+  <!-- Arrow: Commands -> Pipeline -->
+  <line x1="315" y1="140" x2="340" y2="140" stroke="#2d3748" stroke-width="2.5" marker-end="url(#arrowhead)"/>
+
+  <!-- Layer 3: Pipeline -->
+  <rect x="345" y="85" width="320" height="255" rx="6" fill="url(#pipelineGrad)" filter="url(#shadow)"/>
+  <text x="505" y="112" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">Pipeline Stages</text>
+  <text x="505" y="130" font-family="Arial, sans-serif" font-size="11" fill="white" text-anchor="middle">(17 stages)</text>
+
+  <!-- Left column -->
+  <rect x="358" y="145" width="145" height="22" rx="4" fill="white" fill-opacity="0.15"/>
+  <text x="430" y="161" font-family="monospace" font-size="10" fill="white" text-anchor="middle">0. not-started</text>
+
+  <rect x="358" y="173" width="145" height="22" rx="4" fill="white" fill-opacity="0.15"/>
+  <text x="430" y="189" font-family="monospace" font-size="10" fill="white" text-anchor="middle">1. idea-exploration</text>
+
+  <rect x="358" y="201" width="145" height="22" rx="4" fill="white" fill-opacity="0.15"/>
+  <text x="430" y="217" font-family="monospace" font-size="10" fill="white" text-anchor="middle">2. idea-validation</text>
+
+  <rect x="358" y="229" width="145" height="22" rx="4" fill="white" fill-opacity="0.15"/>
+  <text x="430" y="245" font-family="monospace" font-size="10" fill="white" text-anchor="middle">3. literature-review</text>
+
+  <rect x="358" y="257" width="145" height="22" rx="4" fill="white" fill-opacity="0.15"/>
+  <text x="430" y="273" font-family="monospace" font-size="10" fill="white" text-anchor="middle">4. synthesis</text>
+
+  <rect x="358" y="285" width="145" height="22" rx="4" fill="white" fill-opacity="0.15"/>
+  <text x="430" y="301" font-family="monospace" font-size="10" fill="white" text-anchor="middle">5. hypothesis-gen</text>
+
+  <!-- Right column -->
+  <rect x="513" y="145" width="140" height="22" rx="4" fill="white" fill-opacity="0.15"/>
+  <text x="583" y="161" font-family="monospace" font-size="10" fill="white" text-anchor="middle">6. experiment-design</text>
+
+  <rect x="513" y="173" width="140" height="22" rx="4" fill="white" fill-opacity="0.15"/>
+  <text x="583" y="189" font-family="monospace" font-size="10" fill="white" text-anchor="middle">7. experiment-run</text>
+
+  <rect x="513" y="201" width="140" height="22" rx="4" fill="white" fill-opacity="0.15"/>
+  <text x="583" y="217" font-family="monospace" font-size="10" fill="white" text-anchor="middle">8. result-analysis</text>
+
+  <rect x="513" y="229" width="140" height="22" rx="4" fill="white" fill-opacity="0.15"/>
+  <text x="583" y="245" font-family="monospace" font-size="10" fill="white" text-anchor="middle">9. writing</text>
+
+  <rect x="513" y="257" width="140" height="22" rx="4" fill="white" fill-opacity="0.15"/>
+  <text x="583" y="273" font-family="monospace" font-size="10" fill="white" text-anchor="middle">10. figure-gen</text>
+
+  <rect x="513" y="285" width="140" height="22" rx="4" fill="white" fill-opacity="0.15"/>
+  <text x="583" y="301" font-family="monospace" font-size="10" fill="white" text-anchor="middle">11. citation-verif</text>
+
+  <!-- Continuation text below the two columns -->
+  <text x="505" y="325" font-family="Arial, sans-serif" font-size="10" fill="white" text-anchor="middle">12→16: peer-review → completed</text>
+
+  <!-- Arrow: Pipeline -> Skills -->
+  <line x1="665" y1="140" x2="690" y2="140" stroke="#2d3748" stroke-width="2.5" marker-end="url(#arrowhead)"/>
+
+  <!-- Layer 4: Skills -->
+  <rect x="695" y="85" width="155" height="255" rx="6" fill="url(#skillsGrad)" filter="url(#shadow)"/>
+  <text x="772" y="112" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">Skills</text>
+  <text x="772" y="130" font-family="Arial, sans-serif" font-size="11" fill="white" text-anchor="middle">(11 modules)</text>
+
+  <rect x="707" y="145" width="130" height="20" rx="3" fill="white" fill-opacity="0.15"/>
+  <text x="772" y="160" font-family="monospace" font-size="10" fill="white" text-anchor="middle">arc-pipeline</text>
+
+  <rect x="707" y="172" width="130" height="20" rx="3" fill="white" fill-opacity="0.15"/>
+  <text x="772" y="187" font-family="monospace" font-size="10" fill="white" text-anchor="middle">arc-idea-exploration</text>
+
+  <rect x="707" y="199" width="130" height="20" rx="3" fill="white" fill-opacity="0.15"/>
+  <text x="772" y="214" font-family="monospace" font-size="10" fill="white" text-anchor="middle">arc-research</text>
+
+  <rect x="707" y="226" width="130" height="20" rx="3" fill="white" fill-opacity="0.15"/>
+  <text x="772" y="241" font-family="monospace" font-size="10" fill="white" text-anchor="middle">arc-experiment</text>
+
+  <rect x="707" y="253" width="130" height="20" rx="3" fill="white" fill-opacity="0.15"/>
+  <text x="772" y="268" font-family="monospace" font-size="10" fill="white" text-anchor="middle">arc-writing</text>
+
+  <rect x="707" y="280" width="130" height="20" rx="3" fill="white" fill-opacity="0.15"/>
+  <text x="772" y="295" font-family="monospace" font-size="10" fill="white" text-anchor="middle">arc-figure-codegen</text>
+
+  <rect x="707" y="307" width="130" height="20" rx="3" fill="white" fill-opacity="0.15"/>
+  <text x="772" y="322" font-family="monospace" font-size="10" fill="white" text-anchor="middle">arc-citation-style</text>
+
+  <!-- Arrow: Skills -> Agents -->
+  <line x1="850" y1="140" x2="875" y2="140" stroke="#2d3748" stroke-width="2.5" marker-end="url(#arrowhead)"/>
+
+  <!-- Layer 5: Reviewer Agents -->
+  <rect x="880" y="85" width="155" height="255" rx="6" fill="url(#agentsGrad)" filter="url(#shadow)"/>
+  <text x="957" y="112" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">Reviewer</text>
+  <text x="957" y="130" font-family="Arial, sans-serif" font-size="11" fill="white" text-anchor="middle">(12 agents, read-only)</text>
+
+  <rect x="892" y="145" width="132" height="18" rx="3" fill="white" fill-opacity="0.15"/>
+  <text x="958" y="158" font-family="monospace" font-size="9" fill="white" text-anchor="middle">idea-validator</text>
+
+  <rect x="892" y="168" width="132" height="18" rx="3" fill="white" fill-opacity="0.15"/>
+  <text x="958" y="181" font-family="monospace" font-size="9" fill="white" text-anchor="middle">novelty-checker</text>
+
+  <rect x="892" y="191" width="132" height="18" rx="3" fill="white" fill-opacity="0.15"/>
+  <text x="958" y="204" font-family="monospace" font-size="9" fill="white" text-anchor="middle">literature-reviewer</text>
+
+  <rect x="892" y="214" width="132" height="18" rx="3" fill="white" fill-opacity="0.15"/>
+  <text x="958" y="227" font-family="monospace" font-size="9" fill="white" text-anchor="middle">logic-checker</text>
+
+  <rect x="892" y="237" width="132" height="18" rx="3" fill="white" fill-opacity="0.15"/>
+  <text x="958" y="250" font-family="monospace" font-size="9" fill="white" text-anchor="middle">stat-auditor</text>
+
+  <rect x="892" y="260" width="132" height="18" rx="3" fill="white" fill-opacity="0.15"/>
+  <text x="958" y="273" font-family="monospace" font-size="9" fill="white" text-anchor="middle">figure-auditor</text>
+
+  <rect x="892" y="283" width="132" height="18" rx="3" fill="white" fill-opacity="0.15"/>
+  <text x="958" y="296" font-family="monospace" font-size="9" fill="white" text-anchor="middle">citation-verifier</text>
+
+  <rect x="892" y="306" width="132" height="18" rx="3" fill="white" fill-opacity="0.15"/>
+  <text x="958" y="319" font-family="monospace" font-size="9" fill="white" text-anchor="middle">peer-reviewer-1/2</text>
+
+  <!-- Arrow: Agents -> Output -->
+  <line x1="1035" y1="140" x2="1060" y2="140" stroke="#2d3748" stroke-width="2.5" marker-end="url(#arrowhead)"/>
+
+  <!-- Layer 6: Output -->
+  <rect x="1065" y="85" width="115" height="190" rx="6" fill="url(#outputGrad)" filter="url(#shadow)"/>
+  <text x="1122" y="112" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">OUTPUT</text>
+
+  <rect x="1075" y="132" width="95" height="48" rx="4" fill="white" fill-opacity="0.15"/>
+  <text x="1122" y="152" font-family="monospace" font-size="11" fill="white" text-anchor="middle">draft.tex</text>
+  <text x="1122" y="168" font-family="monospace" font-size="11" fill="white" text-anchor="middle">main.pdf</text>
+
+  <rect x="1075" y="190" width="95" height="65" rx="4" fill="white" fill-opacity="0.15"/>
+  <text x="1122" y="210" font-family="monospace" font-size="10" fill="white" text-anchor="middle">repro-</text>
+  <text x="1122" y="225" font-family="monospace" font-size="10" fill="white" text-anchor="middle">ducibility</text>
+  <text x="1122" y="240" font-family="monospace" font-size="10" fill="white" text-anchor="middle">-bundle/</text>
+
+  <!-- ==================== BOTTOM ROW (y: 360-480) ==================== -->
+
+  <!-- Layer 7: State Storage -->
+  <rect x="30" y="360" width="280" height="120" rx="6" fill="url(#stateGrad)" filter="url(#shadow)"/>
+  <text x="170" y="388" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">State Storage (.arc/)</text>
+
+  <rect x="48" y="405" width="110" height="60" rx="4" fill="white" fill-opacity="0.15"/>
+  <text x="103" y="428" font-family="monospace" font-size="11" fill="white" text-anchor="middle">env.json</text>
+  <text x="103" y="448" font-family="monospace" font-size="9" fill="white" text-anchor="middle">compute config</text>
+
+  <rect x="182" y="405" width="115" height="60" rx="4" fill="white" fill-opacity="0.15"/>
+  <text x="239" y="428" font-family="monospace" font-size="11" fill="white" text-anchor="middle">state/*.json</text>
+  <text x="239" y="448" font-family="monospace" font-size="9" fill="white" text-anchor="middle">pipeline + reviews</text>
+
+  <!-- Layer 8: Quality Gates (Hooks) -->
+  <rect x="325" y="360" width="520" height="120" rx="6" fill="url(#hooksGrad)" filter="url(#shadow)"/>
+  <text x="585" y="388" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">Quality Gates (Hooks)</text>
+
+  <!-- Individual hooks -->
+  <rect x="342" y="408" width="78" height="58" rx="4" fill="white" fill-opacity="0.15"/>
+  <text x="381" y="432" font-family="monospace" font-size="9" fill="white" text-anchor="middle">pre-write</text>
+  <text x="381" y="447" font-family="monospace" font-size="9" fill="white" text-anchor="middle">-gate.sh</text>
+
+  <rect x="428" y="408" width="78" height="58" rx="4" fill="white" fill-opacity="0.15"/>
+  <text x="467" y="432" font-family="monospace" font-size="9" fill="white" text-anchor="middle">post-write</text>
+  <text x="467" y="447" font-family="monospace" font-size="9" fill="white" text-anchor="middle">-word.sh</text>
+
+  <rect x="514" y="408" width="78" height="58" rx="4" fill="white" fill-opacity="0.15"/>
+  <text x="553" y="432" font-family="monospace" font-size="9" fill="white" text-anchor="middle">post-write</text>
+  <text x="553" y="447" font-family="monospace" font-size="9" fill="white" text-anchor="middle">-fig.sh</text>
+
+  <rect x="600" y="408" width="78" height="58" rx="4" fill="white" fill-opacity="0.15"/>
+  <text x="639" y="432" font-family="monospace" font-size="9" fill="white" text-anchor="middle">post-write</text>
+  <text x="639" y="447" font-family="monospace" font-size="9" fill="white" text-anchor="middle">-cit.sh</text>
+
+  <rect x="686" y="408" width="78" height="58" rx="4" fill="white" fill-opacity="0.15"/>
+  <text x="725" y="432" font-family="monospace" font-size="9" fill="white" text-anchor="middle">post-write</text>
+  <text x="725" y="447" font-family="monospace" font-size="9" fill="white" text-anchor="middle">-latex.sh</text>
+
+  <!-- Stop Gate (red) -->
+  <rect x="772" y="408" width="65" height="58" rx="4" fill="#e53e3e"/>
+  <text x="804" y="432" font-family="monospace" font-size="9" fill="white" text-anchor="middle">stop-gate</text>
+  <text x="804" y="447" font-family="monospace" font-size="10" font-weight="bold" fill="white" text-anchor="middle">BLOCK</text>
+
+  <!-- ==================== AUTO-LOOPS ==================== -->
+
+  <rect x="860" y="360" width="320" height="120" rx="6" fill="#fff5f5" stroke="#fc8181" stroke-width="2"/>
+  <text x="1020" y="388" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#c53030" text-anchor="middle">Auto-loops</text>
+
+  <rect x="878" y="408" width="72" height="58" rx="4" fill="white" fill-opacity="0.3" stroke="#fc8181"/>
+  <text x="914" y="430" font-family="monospace" font-size="10" fill="#c53030" text-anchor="middle">idea-loop</text>
+  <text x="914" y="450" font-family="monospace" font-size="14" font-weight="bold" fill="#c53030" text-anchor="middle">MAX=3</text>
+
+  <rect x="958" y="408" width="72" height="58" rx="4" fill="white" fill-opacity="0.3" stroke="#fc8181"/>
+  <text x="994" y="430" font-family="monospace" font-size="10" fill="#c53030" text-anchor="middle">review-loop</text>
+  <text x="994" y="450" font-family="monospace" font-size="14" font-weight="bold" fill="#c53030" text-anchor="middle">MAX=4</text>
+
+  <rect x="1038" y="408" width="72" height="58" rx="4" fill="white" fill-opacity="0.3" stroke="#fc8181"/>
+  <text x="1074" y="430" font-family="monospace" font-size="10" fill="#c53030" text-anchor="middle">figure-loop</text>
+  <text x="1074" y="450" font-family="monospace" font-size="14" font-weight="bold" fill="#c53030" text-anchor="middle">MAX=5</text>
+
+  <rect x="1118" y="408" width="55" height="58" rx="4" fill="white" fill-opacity="0.3" stroke="#fc8181"/>
+  <text x="1145" y="430" font-family="monospace" font-size="9" fill="#c53030" text-anchor="middle">cit-loop</text>
+  <text x="1145" y="450" font-family="monospace" font-size="14" font-weight="bold" fill="#c53030" text-anchor="middle">MAX=3</text>
+
+  <!-- ==================== FEEDBACK ARROWS (y: 480-510) ==================== -->
+
+  <!-- State -> Pipeline feedback -->
+  <path d="M170 480 L170 510 L380 510 L380 340" stroke="#4fd1c5" stroke-width="2" fill="none" stroke-dasharray="5,3"/>
+  <polygon points="380,340 380,330 390,340" fill="#4fd1c5"/>
+  <text x="275" y="522" font-family="Arial, sans-serif" font-size="10" fill="#38b2ac">state feedback</text>
+
+  <!-- Hooks -> Pipeline gate result -->
+  <path d="M585 480 L585 510 L505 510 L505 340" stroke="#f6ad55" stroke-width="2" fill="none" stroke-dasharray="5,3"/>
+  <polygon points="505,340 505,330 495,340" fill="#f6ad55"/>
+  <text x="545" y="522" font-family="Arial, sans-serif" font-size="10" fill="#dd6b20">gate result</text>
+
+  <!-- ==================== DESIGN PRINCIPLES (y: 545-640) ==================== -->
+
+  <rect x="30" y="545" width="1150" height="95" rx="6" fill="#edf2f7"/>
+  <text x="50" y="572" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#2d3748">Design Principles</text>
+
+  <text x="50" y="598" font-family="Arial, sans-serif" font-size="11" fill="#4a5568">● Single Source of Truth: .arc/env.json (environment) + .arc/state/*.json (pipeline status)</text>
+  <text x="50" y="618" font-family="Arial, sans-serif" font-size="11" fill="#4a5568">● Blocking Gates: Hooks enforce quality standards - pipeline stops if gates fail</text>
+  <text x="50" y="638" font-family="Arial, sans-serif" font-size="11" fill="#4a5568">● Read-only Reviewers: Agents output to .arc/state/review-*.json, never modify draft.tex</text>
+
+  <!-- ==================== LEGEND (y: 660-740) ==================== -->
+
+  <rect x="30" y="660" width="1150" height="80" rx="6" fill="#f0f4f8"/>
+  <text x="50" y="682" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2d3748">Data Flow Legend</text>
+
+  <line x1="50" y1="718" x2="100" y2="718" stroke="#2d3748" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <text x="115" y="722" font-family="Arial, sans-serif" font-size="10" fill="#4a5568">Main flow (sequential)</text>
+
+  <line x1="260" y1="718" x2="310" y2="718" stroke="#4fd1c5" stroke-width="2" stroke-dasharray="5,3"/>
+  <polygon points="310,713 320,718 310,723" fill="#4fd1c5"/>
+  <text x="335" y="722" font-family="Arial, sans-serif" font-size="10" fill="#4a5568">State feedback</text>
+
+  <line x1="460" y1="718" x2="510" y2="718" stroke="#f6ad55" stroke-width="2" stroke-dasharray="5,3"/>
+  <polygon points="460,713 450,718 460,723" fill="#f6ad55"/>
+  <text x="535" y="722" font-family="Arial, sans-serif" font-size="10" fill="#4a5568">Gate check result</text>
+
+  <rect x="700" y="710" width="14" height="14" rx="2" fill="#e53e3e"/>
+  <text x="725" y="722" font-family="Arial, sans-serif" font-size="10" fill="#4a5568">BLOCK on fail</text>
+
+  <rect x="840" y="710" width="14" height="14" rx="2" fill="#38a169"/>
+  <text x="865" y="722" font-family="Arial, sans-serif" font-size="10" fill="#4a5568">Pass / continue</text>
+
+  <rect x="970" y="710" width="14" height="14" rx="2" fill="#fc8181" fill-opacity="0.3" stroke="#fc8181"/>
+  <text x="995" y="722" font-family="Arial, sans-serif" font-size="10" fill="#4a5568">Auto-loop control</text>
+</svg>

@@ -10,6 +10,16 @@
             "description": "Block reviewer agents from writing draft.tex"
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.arc/hooks/pre-experiment-gate.sh\"",
+            "description": "Check env.json validated before experiment execution"
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -18,23 +28,33 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.arc/hooks/post-write-word-count.sh\"",
-            "description": "Track word count"
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.arc/hooks/post-write-page-count.sh\"",
+            "description": "Check page count against paper-type.page_limit"
           },
           {
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR/.arc/hooks/post-write-section-check.sh\"",
-            "description": "Verify required sections"
+            "description": "Verify required sections including Limitations"
           },
           {
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR/.arc/hooks/post-write-figure-check.sh\"",
-            "description": "Verify figures exist"
+            "description": "Verify figures exist and count"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.arc/hooks/post-write-table-check.sh\"",
+            "description": "Verify table count"
           },
           {
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR/.arc/hooks/post-write-citation-check.sh\"",
             "description": "Validate bib fields"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.arc/hooks/post-write-stat-check.sh\"",
+            "description": "Check statistical compliance warnings"
           },
           {
             "type": "command",

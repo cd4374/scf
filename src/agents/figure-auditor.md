@@ -19,6 +19,7 @@ Audits figure quality:
 ## Input
 
 - `draft.tex` (read-only)
+- `.arc/paper-type.json` — read `min_figures`, `min_tables`
 - `.arc/figures/rendered/` directory
 - `experiment_summary.json`
 - `manifest.json` (if available)
@@ -80,11 +81,23 @@ For each figure in paper:
 
 ## Procedure
 
-1. Read `draft.tex` and extract all figure references
-2. Check each file exists in `.arc/figures/rendered/`
-3. Verify provenance against `experiment_summary.json`
-4. Check quality indicators
-5. Write structured review to `.arc/state/review-figures.json`
+1. Read `.arc/paper-type.json` for `min_figures`, `min_tables`
+2. Read `draft.tex` and extract all figure references
+3. Count figures in main body (exclude appendix)
+4. Check each file exists in `.arc/figures/rendered/`
+5. Verify provenance against `experiment_summary.json`
+6. Check quality indicators
+7. Write structured review to `.arc/state/review-figures.json`
+
+## Figure/table count checks
+
+| Check | Threshold source | Condition |
+|-------|----------------|-----------|
+| Figure count | `paper-type.derived_thresholds.min_figures` | ≥ threshold |
+| Table count | `paper-type.derived_thresholds.min_tables` (default 1) | ≥ threshold |
+| Comparison table | — | At least one table contains Baseline/Ours/Comparison |
+
+Appendix figures (after `\appendix` or `\section{Appendix}`) do not count toward main body totals.
 
 ## Pass criteria
 
@@ -92,6 +105,8 @@ For each figure in paper:
 - No `severity: "blocking"` issues
 - All referenced figures exist
 - All authenticatable to real data
+- Figure count ≥ `min_figures` from paper-type.json
+- Table count ≥ `min_tables` from paper-type.json (default 1)
 - Score ≥ 60
 
 ## Key constraints
